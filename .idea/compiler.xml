@@ -22,11 +22,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="chat" />
+        <module name="collage" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="chat" target="1.5" />
+      <module name="collage" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>

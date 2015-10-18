@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/chat.iml" filepath="$PROJECT_DIR$/chat.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/collage.iml" filepath="$PROJECT_DIR$/.idea/collage.iml" />
     </modules>
   </component>
