@@ -1,0 +1,29 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="chat:war exploded">
+    <output-path>$PROJECT_DIR$/target/chat-0.1-SNAPSHOT</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="chat" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: org.eclipse.jetty.websocket:websocket-server:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty.websocket:websocket-common:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty.websocket:websocket-api:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-util:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-io:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty.websocket:websocket-client:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty.websocket:websocket-servlet:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-servlet:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-security:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-server:9.2.10.v20150310" />
+          <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-http:9.2.10.v20150310" />
+        </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/target/chat-0.1-SNAPSHOT/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="javaee-facet-resources" facet="chat/web/Web" />
+    </root>
+  </artifact>
+</component>
