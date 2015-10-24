@@ -6,9 +6,7 @@
         <webroots>
           <root url="file://$MODULE_DIR$/src/main/webapp" relative="/" />
         </webroots>
-        <sourceRoots>
-          <root url="file://$MODULE_DIR$/src/main/java" />
-        </sourceRoots>
+        <sourceRoots />
       </configuration>
     </facet>
   </component>
@@ -22,5 +20,16 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="opencv-300" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Dropbox/Universitaet/5Semester/Medienverarbeitung/Dateien/opencv_build/bin/opencv-300.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/Dropbox/Universitaet/5Semester/Medienverarbeitung/Dateien/opencv_build/bin/opencv-300.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>
