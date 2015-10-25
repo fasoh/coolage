@@ -71,7 +71,7 @@ class DetectFaceDemo {
         BufferedImage img = ImageIO.read(imageFile);
 
         Graphics2D graph = img.createGraphics();
-        graph.setColor(Color.BLACK);
+        graph.setColor(Color.WHITE);
         graph.fill(new Rectangle(0, 0, (img.getWidth() / 2) - 150, (img.getHeight())));
         graph.fill(new Rectangle((img.getWidth()/2)+150, 0, (img.getWidth() / 2), (img.getHeight())));
         graph.fill(new Rectangle((img.getWidth()/2)-50, 0, 100, (img.getHeight()/2)-50));
