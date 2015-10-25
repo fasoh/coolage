@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,6 +56,32 @@ class DetectFaceDemo {
         System.out.println(String.format("Writing %s", filename));
         Imgcodecs.imwrite(filename, image);
         System.out.println("Image saved under " + System.getProperty("user.dir") + "/" + filename);
+
+        try {
+            drawLetterTest();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void drawLetterTest() throws IOException {
+        System.out.print("Applying demo letter on image ... ");
+
+        File imageFile = new File(System.getProperty("user.dir") + "/faceDetection.png");
+        BufferedImage img = ImageIO.read(imageFile);
+
+        Graphics2D graph = img.createGraphics();
+        graph.setColor(Color.BLACK);
+        graph.fill(new Rectangle(0, 0, (img.getWidth() / 2) - 150, (img.getHeight())));
+        graph.fill(new Rectangle((img.getWidth()/2)+150, 0, (img.getWidth() / 2), (img.getHeight())));
+        graph.fill(new Rectangle((img.getWidth()/2)-50, 0, 100, (img.getHeight()/2)-50));
+        graph.fill(new Rectangle((img.getWidth()/2)-50, (img.getHeight()/2)+50, 100, (img.getHeight()/2)));
+
+        graph.dispose();
+
+        ImageIO.write(img, "jpg", new File(System.getProperty("user.dir") + "/faceDetection.png"));
+
+        System.out.println("Success!");
     }
 
     private BufferedImage loadImageFromURL(String urlString) {
