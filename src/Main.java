@@ -23,11 +23,9 @@ public class Main {
     }
 }
 
-
-//
 // Detects faces in an image, draws boxes around them, and writes the results
 // to "faceDetection.png".
-//
+
 class DetectFaceDemo {
     public void run() {
         System.out.println("\nRunning DetectFaceDemo");
