@@ -19,16 +19,16 @@ public class Main {
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        new DetectFaceDemo().run();
+        new DetectFace().run();
     }
 }
 
 // Detects faces in an image, draws boxes around them, and writes the results
 // to "faceDetection.png".
 
-class DetectFaceDemo {
+class DetectFace {
     public void run() {
-        System.out.println("\nRunning DetectFaceDemo");
+        System.out.println("\nRunning DetectFace");
 
         // Create a face detector from the cascade file in the resources
         // directory.
@@ -54,6 +54,7 @@ class DetectFaceDemo {
         System.out.println(String.format("Writing %s", filename));
         Imgcodecs.imwrite(filename, image);
         System.out.println("Image saved under " + System.getProperty("user.dir") + "/" + filename);
+
 
         try {
             drawLetterTest();
@@ -112,6 +113,7 @@ class DetectFaceDemo {
             return original;
         }
 
+
         // Create a buffered image
         BufferedImage image = new BufferedImage(original.getWidth(), original.getHeight(), type);
 
@@ -139,6 +141,7 @@ class DetectFaceDemo {
         System.out.println("Success!");
         return imageMat;
     }
+
 
 
 
