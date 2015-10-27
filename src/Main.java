@@ -23,6 +23,7 @@ public class Main {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         new DetectFace().run();
+        System.out.println("Done!");
     }
 }
 
@@ -78,7 +79,7 @@ class DetectFace {
                 BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = textImage.createGraphics();
         FontRenderContext frc = g.getFontRenderContext();
-        Font font = new Font(Font.MONOSPACED, Font.BOLD, 300);
+        Font font = loadCustomFont(240f); //set font size as argument
         GlyphVector gv = font.createGlyphVector(frc, text);
         Rectangle2D box = gv.getVisualBounds();
         int xOff = 25+(int)-box.getX();
@@ -102,7 +103,27 @@ class DetectFace {
             e.printStackTrace();
         }
 
-        System.out.print("Success!");
+        System.out.println("Success!");
+    }
+
+    private Font loadCustomFont(float fontSize) {
+        Font customFont = null;
+
+        try {
+            //create the font to use (.ttf)
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/Arial_Black.ttf")).deriveFont(fontSize);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            //register the font
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/Arial_Black.ttf")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch(FontFormatException e)
+        {
+            e.printStackTrace();
+        }
+
+        return customFont;
     }
 
     private BufferedImage loadImageFromURL(String urlString) {
