@@ -1,0 +1,54 @@
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+/**
+ * Created by Jannik on 27.10.15.
+ */
+public class ResourceLoader {
+
+    Converter convert = new Converter();
+
+    public Font customFont(float fontSize) {
+        Font customFont = null;
+
+        try {
+            //create the font to use (.ttf)
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/Arial_Black.ttf")).deriveFont(fontSize);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            //register the font
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/Arial_Black.ttf")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch(FontFormatException e)
+        {
+            e.printStackTrace();
+        }
+
+        return customFont;
+    }
+
+    public BufferedImage imageFromURL(String urlString) {
+        URL imageURL = null;
+        BufferedImage img = null;
+        System.out.print("Downloading picture from URL " + urlString + " ... ");
+
+        try {
+            imageURL = new URL(urlString);
+            //Converter to BufferedImage of type BGR so openCV can read it
+            img = convert.toBufferedImageOfType(ImageIO.read(imageURL), BufferedImage.TYPE_3BYTE_BGR);
+            System.out.println("Success!");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return img;
+    }
+}
