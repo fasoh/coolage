@@ -91,7 +91,7 @@ public class ImageProcessor {
 
             textImage = setBackgroundColor(textImage, backgroundColor);
 
-            textImage = getCroppedImage(textImage, 0);
+            textImage = getCroppedImage(textImage);
             saveBuffImgAsPNG(textImage, i);
 
         }
@@ -105,8 +105,11 @@ public class ImageProcessor {
         System.out.println("Success!");
     }
 
-    public BufferedImage getCroppedImage(BufferedImage source, double tolerance) {
-        // Get our top-left pixel color as our "baseline" for cropping
+    public BufferedImage getCroppedImage(BufferedImage source) {
+        // Crops the parts of an image that have the same color as the top left pixel
+        // The algorithm checks the image pixel by pixel. It stops when the current pixel does NOT equal the top left pixel
+        // Therefore it draws a rectangle over the letter
+
         int baseColor = source.getRGB(0, 0);
 
         int width = source.getWidth();
@@ -116,7 +119,7 @@ public class ImageProcessor {
         int bottomY = -1, bottomX = -1;
         for(int y=0; y<height; y++) {
             for(int x=0; x<width; x++) {
-                if (colorWithinTolerance(baseColor, source.getRGB(x, y), tolerance)) {
+                if (baseColor != source.getRGB(x, y)) {
                     if (x < topX) topX = x;
                     if (y < topY) topY = y;
                     if (x > bottomX) bottomX = x;
@@ -135,28 +138,6 @@ public class ImageProcessor {
         return destination;
     }
 
-    private boolean colorWithinTolerance(int a, int b, double tolerance) {
-        int aAlpha  = (int)((a & 0xFF000000) >>> 24);   // Alpha level
-        int aRed    = (int)((a & 0x00FF0000) >>> 16);   // Red level
-        int aGreen  = (int)((a & 0x0000FF00) >>> 8);    // Green level
-        int aBlue   = (int)(a & 0x000000FF);            // Blue level
-
-        int bAlpha  = (int)((b & 0xFF000000) >>> 24);   // Alpha level
-        int bRed    = (int)((b & 0x00FF0000) >>> 16);   // Red level
-        int bGreen  = (int)((b & 0x0000FF00) >>> 8);    // Green level
-        int bBlue   = (int)(b & 0x000000FF);            // Blue level
-
-        double distance = Math.sqrt((aAlpha-bAlpha)*(aAlpha-bAlpha) +
-                (aRed-bRed)*(aRed-bRed) +
-                (aGreen-bGreen)*(aGreen-bGreen) +
-                (aBlue-bBlue)*(aBlue-bBlue));
-
-        // 510.0 is the maximum distance between two colors
-        // (0,0,0,0 -> 255,255,255,255)
-        double percentAway = distance / 510.0d;
-
-        return (percentAway > tolerance);
-    }
 
     public BufferedImage stitchImages() throws IOException {
         File dir = new File(System.getProperty("user.dir") + "/");
