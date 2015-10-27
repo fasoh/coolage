@@ -50,7 +50,7 @@ public class ImageProcessor {
         saveMatAsPNG(image);
     }
 
-    public void drawLettersOnGeneratedImage(String text, Color backgroundColor, float fontSize, float borderSize, int margin){
+    public void drawLettersOnGeneratedImage(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
 
         for (int i = 0; i < text.length(); i++) {
 
@@ -62,14 +62,14 @@ public class ImageProcessor {
                 e.printStackTrace();
             }
 
-            System.out.print("Applying text on image ... ");
+            System.out.println("Applying text on image " + i + " ... ");
             BufferedImage textImage = new BufferedImage(
                     originalImage.getWidth(),
                     originalImage.getHeight(),
                     BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = textImage.createGraphics();
             FontRenderContext frc = g.getFontRenderContext();
-            Font font = loadResource.customFont("Arial_Black.ttf", fontSize); //(fontName, fontSize)
+            Font font = loadResource.customFont(fontFace, fontSize); //(fontName, fontSize)
             Character c = text.charAt(i);
             GlyphVector gv = font.createGlyphVector(frc, c.toString());
             Rectangle2D box = gv.getVisualBounds();
@@ -80,7 +80,7 @@ public class ImageProcessor {
             g.drawImage(originalImage, 0, 0, null);
             g.setClip(null);
             g.setStroke(new BasicStroke(borderSize));
-            g.setColor(Color.BLACK);
+            g.setColor(borderColor);
             g.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
