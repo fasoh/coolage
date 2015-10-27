@@ -12,8 +12,10 @@ public class Main {
         imageProcessor.detectFace("http://i.imgur.com/nNAM4vu.jpg");
         imageProcessor.detectFace("http://i.imgur.com/yAY2OnG.jpg");
         imageProcessor.detectFace("http://i.imgur.com/IeC86Kx.jpg");
+        imageProcessor.detectFace("http://i.imgur.com/guEE2hm.jpg");
+        imageProcessor.detectFace("http://i.imgur.com/BoPi68u.jpg");
 
-        imageProcessor.drawLettersOnGeneratedImage("ABC", Color.WHITE); //(text, backgroundColor)
+        imageProcessor.drawLettersOnGeneratedImage("TEAM1", Color.WHITE, 340f, 2f, 15); //(text, backgroundColor, fontSize, borderSize, margin)
 
     }
 }

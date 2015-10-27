@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.Buffer;
 
 /**
  * Created by Jannik on 27.10.15.
@@ -51,7 +50,7 @@ public class ImageProcessor {
         saveMatAsPNG(image);
     }
 
-    public void drawLettersOnGeneratedImage(String text, Color backgroundColor){
+    public void drawLettersOnGeneratedImage(String text, Color backgroundColor, float fontSize, float borderSize, int margin){
 
         for (int i = 0; i < text.length(); i++) {
 
@@ -70,7 +69,7 @@ public class ImageProcessor {
                     BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = textImage.createGraphics();
             FontRenderContext frc = g.getFontRenderContext();
-            Font font = loadResource.customFont("Arial_Black.ttf", 240f); //(fontName, fontSize)
+            Font font = loadResource.customFont("Arial_Black.ttf", fontSize); //(fontName, fontSize)
             Character c = text.charAt(i);
             GlyphVector gv = font.createGlyphVector(frc, c.toString());
             Rectangle2D box = gv.getVisualBounds();
@@ -80,7 +79,7 @@ public class ImageProcessor {
             g.setClip(shape);
             g.drawImage(originalImage, 0, 0, null);
             g.setClip(null);
-            g.setStroke(new BasicStroke(2f));
+            g.setStroke(new BasicStroke(borderSize));
             g.setColor(Color.BLACK);
             g.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
@@ -91,7 +90,7 @@ public class ImageProcessor {
 
             textImage = setBackgroundColor(textImage, backgroundColor);
 
-            textImage = getCroppedImage(textImage);
+            textImage = getCroppedImage(textImage, margin);
             saveBuffImgAsPNG(textImage, i);
 
         }
@@ -105,7 +104,7 @@ public class ImageProcessor {
         System.out.println("Success!");
     }
 
-    public BufferedImage getCroppedImage(BufferedImage source) {
+    public BufferedImage getCroppedImage(BufferedImage source, int margin) {
         // Crops the parts of an image that have the same color as the top left pixel
         // The algorithm checks the image pixel by pixel. It stops when the current pixel does NOT equal the top left pixel
         // Therefore it draws a rectangle over the letter
@@ -128,18 +127,22 @@ public class ImageProcessor {
             }
         }
 
-        BufferedImage destination = new BufferedImage( (bottomX-topX+1),
-                (bottomY-topY+1), BufferedImage.TYPE_INT_ARGB);
+        //Create new BufferedImage to paste the cropped content on
+        BufferedImage croppedImage = new BufferedImage( (bottomX-topX+1+margin),
+                (bottomY-topY+1+margin), BufferedImage.TYPE_INT_ARGB);
 
-        destination.getGraphics().drawImage(source, 0, 0,
-                destination.getWidth(), destination.getHeight(),
-                topX, topY, bottomX, bottomY, null);
+        //Fill newly created image
+        croppedImage.getGraphics().drawImage(source, 0, 0,
+                croppedImage.getWidth(), croppedImage.getHeight(),
+                topX - margin, topY - margin, bottomX + margin, bottomY + margin, null);
 
-        return destination;
+        return croppedImage;
     }
 
 
     public BufferedImage stitchImages() throws IOException {
+
+        //Find all files in src/ starting with faceDetection_ (to be changed)
         File dir = new File(System.getProperty("user.dir") + "/");
         File[] foundFiles = dir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -147,24 +150,24 @@ public class ImageProcessor {
             }
         });
 
-        int totalWidth = 0;
         BufferedImage resultImage = null;
 
         for (int i=1;i<foundFiles.length;i++){
-            //BufferedImage buffImage = ImageIO.read(file);
-            //totalWidth += buffImage.getWidth();
 
             BufferedImage firstImage = ImageIO.read(new File(System.getProperty("user.dir") + "/faceDetection_0.png"));
             BufferedImage secondImage = ImageIO.read(new File(System.getProperty("user.dir") + "/faceDetection_" + i + ".png"));
 
             resultImage = new BufferedImage(firstImage.getWidth() +
                     secondImage.getWidth(), firstImage.getHeight(),
-                    BufferedImage.TYPE_INT_RGB);
+                    BufferedImage.TYPE_INT_ARGB);
             Graphics g = resultImage.getGraphics();
             g.drawImage(firstImage, 0, 0, null);
             g.drawImage(secondImage, firstImage.getWidth(), 0, null);
             saveBuffImgAsPNG(resultImage, 0);
         }
+
+        resultImage = setBackgroundColor(resultImage, Color.WHITE);
+
         return resultImage;
 
     }
