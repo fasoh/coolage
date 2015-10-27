@@ -6,6 +6,9 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
@@ -56,31 +59,50 @@ class DetectFace {
         System.out.println("Image saved under " + System.getProperty("user.dir") + "/" + filename);
 
 
+        BufferedImage buffFaceDetectionImage = null;
         try {
-            drawLetterTest();
+            buffFaceDetectionImage = ImageIO.read(new File(System.getProperty("user.dir") + "/faceDetection.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        drawLetterTest(buffFaceDetectionImage, "ABC");
+
     }
 
-    private void drawLetterTest() throws IOException {
-        System.out.print("Applying demo letter on image ... ");
+    private void drawLetterTest(BufferedImage originalImage, String text){
+        System.out.print("Applying text on image ... ");
+        final BufferedImage textImage = new BufferedImage(
+                originalImage.getWidth(),
+                originalImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = textImage.createGraphics();
+        FontRenderContext frc = g.getFontRenderContext();
+        Font font = new Font(Font.MONOSPACED, Font.BOLD, 300);
+        GlyphVector gv = font.createGlyphVector(frc, text);
+        Rectangle2D box = gv.getVisualBounds();
+        int xOff = 25+(int)-box.getX();
+        int yOff = 80+ (int) -box.getY();
+        Shape shape = gv.getOutline(xOff, yOff);
+        g.setClip(shape);
+        g.drawImage(originalImage, 0, 0, null);
+        g.setClip(null);
+        g.setStroke(new BasicStroke(2f));
+        g.setColor(Color.BLACK);
+        g.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g.draw(shape);
 
-        File imageFile = new File(System.getProperty("user.dir") + "/faceDetection.png");
-        BufferedImage img = ImageIO.read(imageFile);
+        g.dispose();
 
-        Graphics2D graph = img.createGraphics();
-        graph.setColor(Color.WHITE);
-        graph.fill(new Rectangle(0, 0, (img.getWidth() / 2) - 150, (img.getHeight())));
-        graph.fill(new Rectangle((img.getWidth()/2)+150, 0, (img.getWidth() / 2), (img.getHeight())));
-        graph.fill(new Rectangle((img.getWidth()/2)-50, 0, 100, (img.getHeight()/2)-50));
-        graph.fill(new Rectangle((img.getWidth()/2)-50, (img.getHeight()/2)+50, 100, (img.getHeight()/2)));
+        try {
+            ImageIO.write(textImage, "jpg", new File(System.getProperty("user.dir") + "/faceDetection.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        graph.dispose();
-
-        ImageIO.write(img, "jpg", new File(System.getProperty("user.dir") + "/faceDetection.png"));
-
-        System.out.println("Success!");
+        System.out.print("Success!");
     }
 
     private BufferedImage loadImageFromURL(String urlString) {
