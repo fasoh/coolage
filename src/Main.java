@@ -97,7 +97,7 @@ class DetectFace {
         g.dispose();
 
         try {
-            ImageIO.write(textImage, "jpg", new File(System.getProperty("user.dir") + "/faceDetection.png"));
+            ImageIO.write(textImage, "png", new File(System.getProperty("user.dir") + "/faceDetection.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
