@@ -13,15 +13,15 @@ public class ResourceLoader {
 
     Converter convert = new Converter();
 
-    public Font customFont(float fontSize) {
+    public Font customFont(String fontName, float fontSize) {
         Font customFont = null;
 
         try {
             //create the font to use (.ttf)
-            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/Arial_Black.ttf")).deriveFont(fontSize);
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName)).deriveFont(fontSize);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             //register the font
-            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/Arial_Black.ttf")));
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -40,7 +40,7 @@ public class ResourceLoader {
 
         try {
             imageURL = new URL(urlString);
-            //Converter to BufferedImage of type BGR so openCV can read it
+            //Convert to BufferedImage of type BGR so openCV can read it
             img = convert.toBufferedImageOfType(ImageIO.read(imageURL), BufferedImage.TYPE_3BYTE_BGR);
             System.out.println("Success!");
         } catch (MalformedURLException e) {

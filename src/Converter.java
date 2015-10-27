@@ -21,7 +21,6 @@ public class Converter {
             return original;
         }
 
-
         // Create a buffered image
         BufferedImage image = new BufferedImage(original.getWidth(), original.getHeight(), type);
 
@@ -39,7 +38,6 @@ public class Converter {
 
     public Mat BufferedToMat(BufferedImage buffImage) {
         System.out.print("Converting Image to Mat ... ");
-        //Convert BufferedImage from URL to Mat for OpenCV
         byte[] pixels = ((DataBufferByte) buffImage.getRaster().getDataBuffer()).getData();
         // Create a Matrix the same size of image
         Mat imageMat = new Mat(buffImage.getHeight(), buffImage.getWidth(), CvType.CV_8UC3);

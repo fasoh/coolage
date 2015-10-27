@@ -1,5 +1,7 @@
 import org.opencv.core.*;
 
+import java.awt.*;
+
 public class Main {
     public static void main(String[] args) {
         // Load the native library.
@@ -8,7 +10,7 @@ public class Main {
         ImageProcessor imageProcessor = new ImageProcessor();
 
         imageProcessor.detectFace("http://i.imgur.com/nNAM4vu.jpg");
-        imageProcessor.drawLettersOnGeneratedImage("ABC");
+        imageProcessor.drawLettersOnGeneratedImage("ABC", Color.WHITE); //(text, backgroundColor)
 
     }
 }
