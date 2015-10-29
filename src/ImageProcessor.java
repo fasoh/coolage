@@ -3,12 +3,10 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -51,7 +49,7 @@ public class ImageProcessor {
 
     public void drawLettersOnGeneratedImage(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
 
-        System.out.print("Applying text on all images in listOfBufferedImages ");
+        System.out.print("Applying text on all images in listOfBufferedImages - ");
 
         int counter = 0;
 
@@ -83,7 +81,7 @@ public class ImageProcessor {
 
             textImage = setBackgroundColor(textImage, backgroundColor);
 
-            textImage = getCroppedImage(textImage, margin);
+            textImage = cropImage(textImage, margin);
 
             listOfBufferedImages.set(counter, textImage);
             counter++;
@@ -98,12 +96,10 @@ public class ImageProcessor {
         System.out.println("Success!");
     }
 
-    public BufferedImage getCroppedImage(BufferedImage source, int margin) {
+    public BufferedImage cropImage(BufferedImage source, int margin) {
         // Crops the parts of an image that have the same color as the top left pixel
         // The algorithm checks the image pixel by pixel. It stops when the current pixel does NOT equal the top left pixel
         // Therefore it draws a rectangle over the letter
-
-        int baseColor = source.getRGB(0, 0);
 
         int width = source.getWidth();
         int height = source.getHeight();
@@ -112,7 +108,7 @@ public class ImageProcessor {
         int bottomY = -1, bottomX = -1;
         for(int y=0; y<height; y++) {
             for(int x=0; x<width; x++) {
-                if (baseColor != source.getRGB(x, y)) {
+                if (source.getRGB(x, y) != -1) { //-1 equals transparent pixel
                     if (x < topX) topX = x;
                     if (y < topY) topY = y;
                     if (x > bottomX) bottomX = x;

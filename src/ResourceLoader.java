@@ -34,7 +34,7 @@ public class ResourceLoader {
     }
 
     public BufferedImage imageFromURL(String urlString) {
-        URL imageURL = null;
+        URL imageURL;
         BufferedImage img = null;
         System.out.print("Downloading picture - ");
 
