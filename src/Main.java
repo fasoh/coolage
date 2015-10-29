@@ -15,7 +15,7 @@ public class Main {
         imageProcessor.detectFace("http://i.imgur.com/guEE2hm.jpg");
         imageProcessor.detectFace("http://i.imgur.com/WTWvYcT.jpg");
 
-        imageProcessor.drawLettersOnGeneratedImage("Hallo Welt", "Arial_Black.ttf", Color.WHITE, 340f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+        imageProcessor.drawLettersOnGeneratedImage("Abcdgyoe Welt", "Arial_Black.ttf", Color.WHITE, 340f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
 
     }
 }

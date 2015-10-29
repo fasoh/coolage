@@ -173,12 +173,19 @@ public class ImageProcessor {
 
             //TODO resultImage height und width an grössten vorhandenen Buchstaben anpassen damit nichts abgeschnitten wird
 
+            int newHeight;
+            if (buffImage.getHeight() > firstImage.getHeight()){
+                newHeight = buffImage.getHeight();
+            } else {
+                newHeight = firstImage.getHeight();
+            }
+
             resultImage = new BufferedImage(firstImage.getWidth() +
-                    buffImage.getWidth(), firstImage.getHeight(),
+                    buffImage.getWidth(), newHeight,
                     BufferedImage.TYPE_INT_ARGB);
             Graphics g = resultImage.getGraphics();
             g.drawImage(firstImage, 0, 0, null);
-            g.drawImage(buffImage, firstImage.getWidth(), firstImage.getHeight()-buffImage.getHeight(), null);
+            g.drawImage(buffImage, firstImage.getWidth(), newHeight-buffImage.getHeight(), null);
             listOfBufferedImages.set(0, resultImage);
         }
 
