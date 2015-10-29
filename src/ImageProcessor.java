@@ -49,6 +49,19 @@ public class ImageProcessor {
 
     public void drawLettersOnGeneratedImage(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
 
+        //Fill up listOfBufferedImages with pictures of itself in case there is more text than available pictures
+        if (text.length() > listOfBufferedImages.size()){
+            int j = 0;
+            for (int i = listOfBufferedImages.size(); i < text.length(); i++){
+                listOfBufferedImages.add(listOfBufferedImages.get(j));
+                j++;
+            }
+        } else {
+            for (int i = listOfBufferedImages.size(); i > text.length(); i--){
+                listOfBufferedImages.remove(listOfBufferedImages.size() - 1);
+            }
+        }
+
         System.out.print("Applying text on all images in listOfBufferedImages - ");
 
         int counter = 0;
@@ -88,8 +101,13 @@ public class ImageProcessor {
         }
 
         try {
-            BufferedImage stitchedImages = stitchImages();
-            convert.saveBuffImgAsPNG(stitchedImages);
+            if (text.length() > 1) {
+                BufferedImage stitchedImages = stitchImages();
+                convert.saveBuffImgAsPNG(stitchedImages);
+            } else {
+                //Special case for single-letter collage
+                convert.saveBuffImgAsPNG(listOfBufferedImages.get(0));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,8 +124,8 @@ public class ImageProcessor {
 
         int topY = Integer.MAX_VALUE, topX = Integer.MAX_VALUE;
         int bottomY = -1, bottomX = -1;
-        for(int y=0; y<height; y++) {
-            for(int x=0; x<width; x++) {
+        for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
                 if (source.getRGB(x, y) != -1) { //-1 equals transparent pixel
                     if (x < topX) topX = x;
                     if (y < topY) topY = y;
@@ -118,8 +136,8 @@ public class ImageProcessor {
         }
 
         //Create new BufferedImage to paste the cropped content on
-        BufferedImage croppedImage = new BufferedImage( (bottomX-topX+1+margin),
-                (bottomY-topY+1+margin), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage croppedImage = new BufferedImage( (bottomX - topX + 1 + margin),
+                (bottomY - topY + 1 + margin), BufferedImage.TYPE_INT_ARGB);
 
         //Fill newly created image
         croppedImage.getGraphics().drawImage(source, 0, 0,
@@ -159,7 +177,7 @@ public class ImageProcessor {
     }
 
     private BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
-        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(),buffImage.getHeight(),BufferedImage.TYPE_INT_ARGB);
+        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         for (int x = 0; x < buffImage.getWidth(); x++){
             for (int y = 0; y < buffImage.getHeight(); y++){
                 int rgba = buffImage.getRGB(x,y);
