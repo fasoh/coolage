@@ -70,33 +70,37 @@ public class ImageProcessor {
 
         for (BufferedImage buffImage : listOfBufferedImages) {
 
-            BufferedImage textImage = new BufferedImage(
-                    buffImage.getWidth(),
-                    buffImage.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = textImage.createGraphics();
-            FontRenderContext frc = g.getFontRenderContext();
-            Font font = loadResource.customFont(fontFace, fontSize);
-            Character c = text.charAt(counter);
-            GlyphVector gv = font.createGlyphVector(frc, c.toString());
-            int xOff = textImage.getWidth()/2-100;
-            int yOff = textImage.getHeight()/2+75;
-            Shape shape = gv.getOutline(xOff, yOff);
-            g.setClip(shape);
-            g.drawImage(buffImage, 0, 0, null);
-            g.setClip(null);
-            g.setStroke(new BasicStroke(borderSize));
-            g.setColor(borderColor);
-            g.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g.draw(shape);
-
-            g.dispose();
-
-            textImage = setBackgroundColor(textImage, backgroundColor);
+            BufferedImage textImage;
 
             if (text.charAt(counter) != ' '){
+                textImage = new BufferedImage(
+                        buffImage.getWidth(),
+                        buffImage.getHeight(),
+                        BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g = textImage.createGraphics();
+                FontRenderContext frc = g.getFontRenderContext();
+                Font font = loadResource.customFont(fontFace, fontSize);
+                Character c = text.charAt(counter);
+                GlyphVector gv = font.createGlyphVector(frc, c.toString());
+                int xOff = textImage.getWidth()/2-100;
+                int yOff = textImage.getHeight()/2+75;
+                Shape shape = gv.getOutline(xOff, yOff);
+                g.setClip(shape);
+                    g.drawImage(buffImage, 0, 0, null);
+                g.setClip(null);
+                    g.setStroke(new BasicStroke(borderSize));
+                    g.setColor(borderColor);
+                    g.setRenderingHint(
+                            RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+                g.draw(shape);
+
+                g.dispose();
+
+                textImage = setBackgroundColor(textImage, backgroundColor);
+
+                System.out.print(c);
+
                 textImage = cropImage(textImage, margin);
             } else {
                 textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text
@@ -117,7 +121,7 @@ public class ImageProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Success!");
+        System.out.println(" - Success!");
     }
 
     public BufferedImage cropImage(BufferedImage source, int margin) {
@@ -167,12 +171,14 @@ public class ImageProcessor {
 
             BufferedImage firstImage = listOfBufferedImages.get(0);
 
+            //TODO resultImage height und width an grössten vorhandenen Buchstaben anpassen damit nichts abgeschnitten wird
+
             resultImage = new BufferedImage(firstImage.getWidth() +
                     buffImage.getWidth(), firstImage.getHeight(),
                     BufferedImage.TYPE_INT_ARGB);
             Graphics g = resultImage.getGraphics();
             g.drawImage(firstImage, 0, 0, null);
-            g.drawImage(buffImage, firstImage.getWidth(), 0, null);
+            g.drawImage(buffImage, firstImage.getWidth(), firstImage.getHeight()-buffImage.getHeight(), null);
             listOfBufferedImages.set(0, resultImage);
         }
 
