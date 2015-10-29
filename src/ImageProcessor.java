@@ -23,7 +23,6 @@ public class ImageProcessor {
     ArrayList<BufferedImage> listOfBufferedImages = new ArrayList<BufferedImage>();
 
     public void detectFace(String URLString) {
-        System.out.print("Detecting face - ");
 
         // Create a face detector from the cascade file in the resources
         // directory.
@@ -31,20 +30,23 @@ public class ImageProcessor {
         BufferedImage buffImage = loadResource.imageFromURL(URLString);
         Mat image = convert.BufferedToMat(buffImage);
 
+        System.out.print("Detecting faces: ");
+
         // Detect faces in the image.
         // MatOfRect is a special container class for Rect.
         MatOfRect faceDetections = new MatOfRect();
         faceDetector.detectMultiScale(image, faceDetections);
 
-        System.out.print(String.format("Detected %s faces - ", faceDetections.toArray().length));
+        System.out.print(String.format("%s found - ", faceDetections.toArray().length));
 
         // Draw a bounding box around each face.
         for (Rect rect : faceDetections.toArray()) {
             Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
         }
 
-        System.out.println("Saving to listOfBufferedImages");
         listOfBufferedImages.add(convert.MatToBuffered(image));
+        System.out.println("Saved to listOfBufferedImages");
+
     }
 
     public void drawLettersOnGeneratedImage(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
@@ -94,7 +96,11 @@ public class ImageProcessor {
 
             textImage = setBackgroundColor(textImage, backgroundColor);
 
-            textImage = cropImage(textImage, margin);
+            if (text.charAt(counter) != ' '){
+                textImage = cropImage(textImage, margin);
+            } else {
+                textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text
+            }
 
             listOfBufferedImages.set(counter, textImage);
             counter++;
