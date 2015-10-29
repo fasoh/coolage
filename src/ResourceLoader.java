@@ -36,13 +36,12 @@ public class ResourceLoader {
     public BufferedImage imageFromURL(String urlString) {
         URL imageURL = null;
         BufferedImage img = null;
-        System.out.print("Downloading picture from URL " + urlString + " ... ");
+        System.out.print("Downloading picture - ");
 
         try {
             imageURL = new URL(urlString);
             //Convert to BufferedImage of type BGR so openCV can read it
             img = convert.toBufferedImageOfType(ImageIO.read(imageURL), BufferedImage.TYPE_3BYTE_BGR);
-            System.out.println("Success!");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
