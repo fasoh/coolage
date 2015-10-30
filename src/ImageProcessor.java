@@ -85,9 +85,7 @@ public class ImageProcessor {
             Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
         }
 
-        //Save to ArrayList for later use (to be changed)
         return convert.MatToBuffered(image);
-
     }
 
     public BufferedImage drawLettersOnGeneratedImage(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
@@ -100,7 +98,7 @@ public class ImageProcessor {
             textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = textImage.createGraphics();
             FontRenderContext frc = g.getFontRenderContext();
-            Font font = null;
+            Font font;
             if(fontFace.startsWith("http")){
                 font = loadResource.customFontFromUrl(fontFace, fontSize);
             } else {
@@ -126,7 +124,7 @@ public class ImageProcessor {
 
             textImage = cropImage(textImage, margin);
         } else {
-            textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text
+            textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
             System.out.print("  ");
         }
 
