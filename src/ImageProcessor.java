@@ -14,7 +14,6 @@ import java.util.ArrayList;
  * Created by Jannik on 27.10.15.
  */
 
-// Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 public class ImageProcessor {
 
     ArrayList<BufferedImage> rawImageList;
@@ -69,9 +68,9 @@ public class ImageProcessor {
 
     }
 
-    public BufferedImage detectFaces(BufferedImage rawImage) {
+    public BufferedImage detectFaces(BufferedImage rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
-            // Create a face detector from the cascade file in the resources directory.
+        // Create a face detector from the cascade file in the resources directory.
             CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
             Mat image = convert.BufferedToMat(rawImage);
 
