@@ -71,22 +71,22 @@ public class ImageProcessor {
     public BufferedImage detectFaces(BufferedImage rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
         // Create a face detector from the cascade file in the resources directory.
-            CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
-            Mat image = convert.BufferedToMat(rawImage);
+        CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
+        Mat image = convert.BufferedToMat(rawImage);
 
-            // Detect faces in the image. MatOfRect is a special container class for Rect.
-            System.out.print("Detecting faces: ");
-            MatOfRect faceDetections = new MatOfRect();
-            faceDetector.detectMultiScale(image, faceDetections);
-            System.out.print(String.format("%s found - ", faceDetections.toArray().length));
+        // Detect faces in the image. MatOfRect is a special container class for Rect.
+        System.out.print("Detecting faces: ");
+        MatOfRect faceDetections = new MatOfRect();
+        faceDetector.detectMultiScale(image, faceDetections);
+        System.out.print(String.format("%s found - ", faceDetections.toArray().length));
 
-            // Draw a bounding box around each face.
-            for (Rect rect : faceDetections.toArray()) {
-                Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
-            }
+        // Draw a bounding box around each face.
+        for (Rect rect : faceDetections.toArray()) {
+            Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+        }
 
-            //Save to ArrayList for later use (to be changed)
-            return convert.MatToBuffered(image);
+        //Save to ArrayList for later use (to be changed)
+        return convert.MatToBuffered(image);
 
     }
 
@@ -100,7 +100,12 @@ public class ImageProcessor {
             textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = textImage.createGraphics();
             FontRenderContext frc = g.getFontRenderContext();
-            Font font = loadResource.customFont(fontFace, fontSize);
+            Font font = null;
+            if(fontFace.startsWith("http")){
+                font = loadResource.customFontFromUrl(fontFace, fontSize);
+            } else {
+                font = loadResource.customFontFromFile(fontFace, fontSize);
+            }
             GlyphVector gv = font.createGlyphVector(frc, letter.toString());
             int xOff = textImage.getWidth()/2-100;
             int yOff = textImage.getHeight()/2+75;

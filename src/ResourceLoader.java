@@ -28,7 +28,7 @@ public class ResourceLoader {
         return buffImageList;
     }
 
-    public Font customFont(String fontName, float fontSize) {
+    public Font customFontFromFile(String fontName, float fontSize) {
         Font customFont = null;
 
         try {
@@ -42,6 +42,27 @@ public class ResourceLoader {
         }
         catch(FontFormatException e)
         {
+            e.printStackTrace();
+        }
+
+        return customFont;
+    }
+
+    public Font customFontFromUrl(String urlString, float fontSize){
+        Font customFont = null;
+
+        try {
+            URL fontUrl = new URL(urlString);
+            customFont = Font.createFont(Font.TRUETYPE_FONT, fontUrl.openStream());
+            customFont = customFont.deriveFont(Font.PLAIN,fontSize);
+            GraphicsEnvironment ge =
+                    GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(customFont);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (FontFormatException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
