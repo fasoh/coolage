@@ -51,6 +51,8 @@ public class ImageProcessor {
 
     public void drawLettersOnGeneratedImage(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
 
+        text = text.toUpperCase();
+
         //Fill up listOfBufferedImages with pictures of itself in case there is more text than available pictures
         if (text.length() > listOfBufferedImages.size()){
             int j = 0;
@@ -99,7 +101,7 @@ public class ImageProcessor {
 
                 textImage = setBackgroundColor(textImage, backgroundColor);
 
-                System.out.print(c);
+                System.out.print(c + " ");
 
                 textImage = cropImage(textImage, margin);
             } else {
@@ -112,7 +114,7 @@ public class ImageProcessor {
 
         try {
             if (text.length() > 1) {
-                BufferedImage stitchedImages = stitchImages();
+                BufferedImage stitchedImages = stitchImages(backgroundColor);
                 convert.saveBuffImgAsPNG(stitchedImages);
             } else {
                 //Special case for single-letter collage
@@ -136,7 +138,7 @@ public class ImageProcessor {
         int bottomY = -1, bottomX = -1;
         for(int y = 0; y < height; y++) {
             for(int x = 0; x < width; x++) {
-                if (source.getRGB(x, y) != -1) { //-1 equals transparent pixel
+                if (source.getRGB(x, y) != source.getRGB(0,0)) { //top left pixel (0,0) used as comparator
                     if (x < topX) topX = x;
                     if (y < topY) topY = y;
                     if (x > bottomX) bottomX = x;
@@ -158,7 +160,7 @@ public class ImageProcessor {
     }
 
 
-    public BufferedImage stitchImages() throws IOException {
+    public BufferedImage stitchImages(Color backgroundColor) throws IOException {
 
         BufferedImage resultImage = null;
 
@@ -170,8 +172,6 @@ public class ImageProcessor {
             }
 
             BufferedImage firstImage = listOfBufferedImages.get(0);
-
-            //TODO resultImage height und width an grössten vorhandenen Buchstaben anpassen damit nichts abgeschnitten wird
 
             int newHeight;
             if (buffImage.getHeight() > firstImage.getHeight()){
@@ -189,7 +189,7 @@ public class ImageProcessor {
             listOfBufferedImages.set(0, resultImage);
         }
 
-        resultImage = setBackgroundColor(resultImage, Color.WHITE);
+        resultImage = setBackgroundColor(resultImage, backgroundColor);
 
         return resultImage;
 
