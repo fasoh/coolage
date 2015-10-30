@@ -14,22 +14,62 @@ import java.util.ArrayList;
  * Created by Jannik on 27.10.15.
  */
 
-// Detects faces in an image, draws boxes around them, and writes the results
-// to "faceDetection.png".
+// Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 public class ImageProcessor {
 
+    ArrayList<BufferedImage> rawImageList;
     Converter convert = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
-    ArrayList<BufferedImage> listOfRawImages = new ArrayList<BufferedImage>();
-    ArrayList<BufferedImage> listOfBufferedImages = new ArrayList<BufferedImage>();
 
-    public ImageProcessor(ArrayList<BufferedImage> listOfRawImages){
-        this.listOfRawImages = listOfRawImages;
+    public ImageProcessor(ArrayList<BufferedImage> rawImageList){
+        this.rawImageList = rawImageList;
     }
 
-    public void detectFaces() {
+    public void processImages(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin) {
 
-        for (BufferedImage rawImage : listOfRawImages){
+        this.matchImageCountWithWordCount(text);
+        text = text.toUpperCase();
+        BufferedImage finalImage = null;
+        int counter = 0;
+
+        for (BufferedImage rawImage : rawImageList){
+            BufferedImage newSingleLetterImage = this.detectFaces(rawImage);
+            newSingleLetterImage = this.drawLettersOnGeneratedImage(newSingleLetterImage, text.charAt(counter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin);
+
+            if (counter == 0) {
+                finalImage = newSingleLetterImage; //Avoids the case that picture 0 gets stitched to a copy of picture 0
+            } else {
+                try {
+                    finalImage = stitchImages(finalImage, newSingleLetterImage, backgroundColor, text.length());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            counter++;
+        }
+
+        convert.saveBuffImgAsPNG(finalImage);
+
+    }
+
+    private void matchImageCountWithWordCount(String text) {
+        //Fill up rawImageList with pictures of itself in case there is more text than available pictures
+        if (text.length() > rawImageList.size()){
+            int j = 0;
+            for (int i = rawImageList.size(); i < text.length(); i++){
+                rawImageList.add(rawImageList.get(j));
+                j++;
+            }
+        } else { //Trims rawImageList to size of text if there are more images than text
+            for (int i = rawImageList.size(); i > text.length(); i--){
+                rawImageList.remove(rawImageList.size() - 1);
+            }
+        }
+
+    }
+
+    public BufferedImage detectFaces(BufferedImage rawImage) {
 
             // Create a face detector from the cascade file in the resources directory.
             CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
@@ -47,87 +87,48 @@ public class ImageProcessor {
             }
 
             //Save to ArrayList for later use (to be changed)
-            listOfBufferedImages.add(convert.MatToBuffered(image));
-            System.out.println("Saved to listOfBufferedImages");
-        }
+            return convert.MatToBuffered(image);
 
     }
 
-    public void drawLettersOnGeneratedImage(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
+    public BufferedImage drawLettersOnGeneratedImage(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
 
-        text = text.toUpperCase();
+        System.out.print("Applying text: ");
 
-        //Fill up listOfBufferedImages with pictures of itself in case there is more text than available pictures
-        if (text.length() > listOfBufferedImages.size()){
-            int j = 0;
-            for (int i = listOfBufferedImages.size(); i < text.length(); i++){
-                listOfBufferedImages.add(listOfBufferedImages.get(j));
-                j++;
-            }
+        BufferedImage textImage;
+
+        if (letter != ' '){
+            textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = textImage.createGraphics();
+            FontRenderContext frc = g.getFontRenderContext();
+            Font font = loadResource.customFont(fontFace, fontSize);
+            GlyphVector gv = font.createGlyphVector(frc, letter.toString());
+            int xOff = textImage.getWidth()/2-100;
+            int yOff = textImage.getHeight()/2+75;
+            Shape shape = gv.getOutline(xOff, yOff);
+            g.setClip(shape);
+            g.drawImage(buffImage, 0, 0, null);
+            g.setClip(null);
+            g.setStroke(new BasicStroke(borderSize));
+            g.setColor(borderColor);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.draw(shape);
+
+            g.dispose();
+
+            textImage = setBackgroundColor(textImage, backgroundColor);
+
+            System.out.print(letter + " ");
+
+            textImage = cropImage(textImage, margin);
         } else {
-            for (int i = listOfBufferedImages.size(); i > text.length(); i--){
-                listOfBufferedImages.remove(listOfBufferedImages.size() - 1);
-            }
+            textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text
+            System.out.print("  ");
         }
 
-        System.out.print("Applying text on all images in listOfBufferedImages - ");
-
-        int counter = 0;
-
-        for (BufferedImage buffImage : listOfBufferedImages) {
-
-            BufferedImage textImage;
-
-            if (text.charAt(counter) != ' '){
-                textImage = new BufferedImage(
-                        buffImage.getWidth(),
-                        buffImage.getHeight(),
-                        BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g = textImage.createGraphics();
-                FontRenderContext frc = g.getFontRenderContext();
-                Font font = loadResource.customFont(fontFace, fontSize);
-                Character c = text.charAt(counter);
-                GlyphVector gv = font.createGlyphVector(frc, c.toString());
-                int xOff = textImage.getWidth()/2-100;
-                int yOff = textImage.getHeight()/2+75;
-                Shape shape = gv.getOutline(xOff, yOff);
-                g.setClip(shape);
-                    g.drawImage(buffImage, 0, 0, null);
-                g.setClip(null);
-                    g.setStroke(new BasicStroke(borderSize));
-                    g.setColor(borderColor);
-                    g.setRenderingHint(
-                            RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_ON);
-                g.draw(shape);
-
-                g.dispose();
-
-                textImage = setBackgroundColor(textImage, backgroundColor);
-
-                System.out.print(c + " ");
-
-                textImage = cropImage(textImage, margin);
-            } else {
-                textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text
-            }
-
-            listOfBufferedImages.set(counter, textImage);
-            counter++;
-        }
-
-        try {
-            if (text.length() > 1) {
-                BufferedImage stitchedImages = stitchImages(backgroundColor);
-                convert.saveBuffImgAsPNG(stitchedImages);
-            } else {
-                //Special case for single-letter collage
-                convert.saveBuffImgAsPNG(listOfBufferedImages.get(0));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         System.out.println(" - Success!");
+
+        return textImage;
     }
 
     public BufferedImage cropImage(BufferedImage source, int margin) {
@@ -164,39 +165,34 @@ public class ImageProcessor {
     }
 
 
-    public BufferedImage stitchImages(Color backgroundColor) throws IOException {
+    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage newSingleLetterImage, Color backgroundColor, int textLength) throws IOException {
 
-        BufferedImage resultImage = null;
+        //Stitches images firstImage and newSingleLetterImage together (which becomes the new firstImage for the next iteration)
 
-        for (BufferedImage buffImage : listOfBufferedImages){
+        if (textLength == 1) { //Special case for single-letter collage
+            return rawImageList.get(0);
+        } else {
 
-            //Avoids the case that picture 0 gets stitched to picture 0 itself
-            if (listOfBufferedImages.get(0).equals(buffImage)){
-                continue;
-            }
-
-            BufferedImage firstImage = listOfBufferedImages.get(0);
+            BufferedImage resultImage;
 
             int newHeight;
-            if (buffImage.getHeight() > firstImage.getHeight()){
-                newHeight = buffImage.getHeight();
+            if (newSingleLetterImage.getHeight() > firstImage.getHeight()){
+                newHeight = newSingleLetterImage.getHeight();
             } else {
                 newHeight = firstImage.getHeight();
             }
 
             resultImage = new BufferedImage(firstImage.getWidth() +
-                    buffImage.getWidth(), newHeight,
+                    newSingleLetterImage.getWidth(), newHeight,
                     BufferedImage.TYPE_INT_ARGB);
             Graphics g = resultImage.getGraphics();
             g.drawImage(firstImage, 0, 0, null);
-            g.drawImage(buffImage, firstImage.getWidth(), newHeight-buffImage.getHeight(), null);
-            listOfBufferedImages.set(0, resultImage);
+            g.drawImage(newSingleLetterImage, firstImage.getWidth(), newHeight - newSingleLetterImage.getHeight(), null);
+
+            resultImage = setBackgroundColor(resultImage, backgroundColor);
+            return resultImage;
+
         }
-
-        resultImage = setBackgroundColor(resultImage, backgroundColor);
-
-        return resultImage;
-
     }
 
     private BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {

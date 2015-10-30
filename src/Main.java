@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Main {
 
     public static void main(String[] args) {
+
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         ResourceLoader loadResource = new ResourceLoader();
@@ -17,11 +18,12 @@ public class Main {
         urlList.add("http://i.imgur.com/IeC86Kx.jpg");
         urlList.add("http://i.imgur.com/guEE2hm.jpg");
         urlList.add("http://i.imgur.com/WTWvYcT.jpg");
-        ArrayList<BufferedImage> bufferedImageList = loadResource.downloadImages(urlList);
+        ArrayList<BufferedImage> rawImageList = loadResource.downloadImages(urlList);
 
-        ImageProcessor imageProcessor = new ImageProcessor(bufferedImageList);
-        imageProcessor.detectFaces();
-        imageProcessor.drawLettersOnGeneratedImage("Hallo test", "Arial_Black.ttf", Color.WHITE, 340f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+        ImageProcessor imageProcessor = new ImageProcessor(rawImageList);
+        imageProcessor.processImages("aww yiss", "Arial_Black.ttf", Color.WHITE, 340f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+
+        System.out.println("Done!");
 
     }
 }
