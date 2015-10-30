@@ -20,32 +20,36 @@ public class ImageProcessor {
 
     Converter convert = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
+    ArrayList<BufferedImage> listOfRawImages = new ArrayList<BufferedImage>();
     ArrayList<BufferedImage> listOfBufferedImages = new ArrayList<BufferedImage>();
 
-    public void detectFace(String URLString) {
+    public ImageProcessor(ArrayList<BufferedImage> listOfRawImages){
+        this.listOfRawImages = listOfRawImages;
+    }
 
-        // Create a face detector from the cascade file in the resources
-        // directory.
-        CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
-        BufferedImage buffImage = loadResource.imageFromURL(URLString);
-        Mat image = convert.BufferedToMat(buffImage);
+    public void detectFaces() {
 
-        System.out.print("Detecting faces: ");
+        for (BufferedImage rawImage : listOfRawImages){
 
-        // Detect faces in the image.
-        // MatOfRect is a special container class for Rect.
-        MatOfRect faceDetections = new MatOfRect();
-        faceDetector.detectMultiScale(image, faceDetections);
+            // Create a face detector from the cascade file in the resources directory.
+            CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
+            Mat image = convert.BufferedToMat(rawImage);
 
-        System.out.print(String.format("%s found - ", faceDetections.toArray().length));
+            // Detect faces in the image. MatOfRect is a special container class for Rect.
+            System.out.print("Detecting faces: ");
+            MatOfRect faceDetections = new MatOfRect();
+            faceDetector.detectMultiScale(image, faceDetections);
+            System.out.print(String.format("%s found - ", faceDetections.toArray().length));
 
-        // Draw a bounding box around each face.
-        for (Rect rect : faceDetections.toArray()) {
-            Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+            // Draw a bounding box around each face.
+            for (Rect rect : faceDetections.toArray()) {
+                Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+            }
+
+            //Save to ArrayList for later use (to be changed)
+            listOfBufferedImages.add(convert.MatToBuffered(image));
+            System.out.println("Saved to listOfBufferedImages");
         }
-
-        listOfBufferedImages.add(convert.MatToBuffered(image));
-        System.out.println("Saved to listOfBufferedImages");
 
     }
 

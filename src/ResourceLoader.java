@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by Jannik on 27.10.15.
@@ -12,6 +13,20 @@ import java.net.URL;
 public class ResourceLoader {
 
     Converter convert = new Converter();
+
+    public ArrayList<BufferedImage> downloadImages(ArrayList<String> urlList){
+        System.out.print("Downloading picture - ");
+        int outputCounter = 1;
+        ArrayList<BufferedImage> buffImageList = new ArrayList<BufferedImage>();
+        for (String url : urlList){
+            System.out.print(outputCounter + " ");
+            BufferedImage buffImage = this.imageFromURL(url);
+            buffImageList.add(buffImage);
+            outputCounter++;
+        }
+        System.out.println();
+        return buffImageList;
+    }
 
     public Font customFont(String fontName, float fontSize) {
         Font customFont = null;
@@ -36,7 +51,6 @@ public class ResourceLoader {
     public BufferedImage imageFromURL(String urlString) {
         URL imageURL;
         BufferedImage img = null;
-        System.out.print("Downloading picture - ");
 
         try {
             imageURL = new URL(urlString);
