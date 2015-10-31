@@ -16,12 +16,19 @@ import java.util.ArrayList;
 
 public class ImageProcessor {
 
-    ArrayList<BufferedImage> rawImageList;
+    ArrayList<Mat> matImageList = new ArrayList<Mat>();
     Converter convert = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
 
     public ImageProcessor(ArrayList<BufferedImage> rawImageList){
-        this.rawImageList = rawImageList;
+        System.out.print("Converting Images to Mat - ");
+        int counter = 1;
+        for (BufferedImage bufferedImage : rawImageList){
+            matImageList.add(convert.BufferedToMat(bufferedImage));
+            System.out.print(counter + " ");
+            counter++;
+        }
+        System.out.println();
     }
 
     public void processImages(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin) {
@@ -31,7 +38,7 @@ public class ImageProcessor {
         BufferedImage finalImage = null;
         int counter = 0;
 
-        for (BufferedImage rawImage : rawImageList){
+        for (Mat rawImage : matImageList){
             BufferedImage newSingleLetterImage = this.detectFaces(rawImage);
             newSingleLetterImage = this.drawLettersOnGeneratedImage(newSingleLetterImage, text.charAt(counter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin);
 
@@ -54,38 +61,37 @@ public class ImageProcessor {
 
     private void matchImageCountWithWordCount(String text) {
         //Fill up rawImageList with pictures of itself in case there is more text than available pictures
-        if (text.length() > rawImageList.size()){
+        if (text.length() > matImageList.size()){
             int j = 0;
-            for (int i = rawImageList.size(); i < text.length(); i++){
-                rawImageList.add(rawImageList.get(j));
+            for (int i = matImageList.size(); i < text.length(); i++){
+                matImageList.add(matImageList.get(j));
                 j++;
             }
         } else { //Trims rawImageList to size of text if there are more images than text
-            for (int i = rawImageList.size(); i > text.length(); i--){
-                rawImageList.remove(rawImageList.size() - 1);
+            for (int i = matImageList.size(); i > text.length(); i--){
+                matImageList.remove(matImageList.size() - 1);
             }
         }
 
     }
 
-    public BufferedImage detectFaces(BufferedImage rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
+    public BufferedImage detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
         // Create a face detector from the cascade file in the resources directory.
         CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
-        Mat image = convert.BufferedToMat(rawImage);
 
         // Detect faces in the image. MatOfRect is a special container class for Rect.
         System.out.print("Detecting faces: ");
         MatOfRect faceDetections = new MatOfRect();
-        faceDetector.detectMultiScale(image, faceDetections);
+        faceDetector.detectMultiScale(rawImage, faceDetections);
         System.out.print(String.format("%s found - ", faceDetections.toArray().length));
 
         // Draw a bounding box around each face.
         for (Rect rect : faceDetections.toArray()) {
-            Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+            Imgproc.rectangle(rawImage, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
         }
 
-        return convert.MatToBuffered(image);
+        return convert.MatToBuffered(rawImage);
     }
 
     public BufferedImage drawLettersOnGeneratedImage(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
@@ -175,7 +181,7 @@ public class ImageProcessor {
         //Stitches images firstImage and newSingleLetterImage together (which becomes the new firstImage for the next iteration)
 
         if (textLength == 1) { //Special case for single-letter collage
-            return rawImageList.get(0);
+            return convert.MatToBuffered(matImageList.get(0));
         } else {
 
             BufferedImage resultImage;

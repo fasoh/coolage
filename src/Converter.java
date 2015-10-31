@@ -50,7 +50,6 @@ public class Converter {
     }
 
     public Mat BufferedToMat(BufferedImage buffImage) {
-        System.out.print("Converting Image to Mat - ");
         byte[] pixels = ((DataBufferByte) buffImage.getRaster().getDataBuffer()).getData();
         // Create a Matrix the same size of image
         Mat imageMat = new Mat(buffImage.getHeight(), buffImage.getWidth(), CvType.CV_8UC3);
