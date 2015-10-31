@@ -1,3 +1,5 @@
+import org.opencv.core.Mat;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,18 +16,19 @@ public class ResourceLoader {
 
     Converter convert = new Converter();
 
-    public ArrayList<BufferedImage> downloadImages(ArrayList<String> urlList){
+    public ArrayList<Mat> downloadImages(ArrayList<String> urlList){
         System.out.print("Downloading picture - ");
         int outputCounter = 1;
-        ArrayList<BufferedImage> buffImageList = new ArrayList<BufferedImage>();
+        ArrayList<Mat> matImageList = new ArrayList<Mat>();
         for (String url : urlList){
             System.out.print(outputCounter + " ");
             BufferedImage buffImage = this.imageFromURL(url);
-            buffImageList.add(buffImage);
+            Mat matImage = convert.BufferedToMat(buffImage);
+            matImageList.add(matImage);
             outputCounter++;
         }
-        System.out.println();
-        return buffImageList;
+        System.out.println("- Converted to Mat");
+        return matImageList;
     }
 
     public Font customFontFromFile(String fontName, float fontSize) {
@@ -54,7 +57,7 @@ public class ResourceLoader {
         try {
             URL fontUrl = new URL(urlString);
             customFont = Font.createFont(Font.TRUETYPE_FONT, fontUrl.openStream());
-            customFont = customFont.deriveFont(Font.PLAIN,fontSize);
+            customFont = customFont.deriveFont(Font.PLAIN, fontSize);
             GraphicsEnvironment ge =
                     GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
@@ -84,5 +87,23 @@ public class ResourceLoader {
         }
 
         return img;
+    }
+
+    public void matchImageCountWithWordCount(String text, ArrayList<Mat> buffImageList) {
+        //Fill up rawImageList with pictures of itself in case there is more text than available pictures
+        if (text.length() > buffImageList.size()){
+            System.out.println("Filling up imageList (text > imageList.size())");
+            int j = 0;
+            for (int i = buffImageList.size(); i < text.length(); i++){
+                buffImageList.add(buffImageList.get(j));
+                j++;
+            }
+        } else { //Trims rawImageList to size of text if there are more images than text
+            System.out.println("Trimming imageList (text < imageList.size())");
+            for (int i = buffImageList.size(); i > text.length(); i--){
+                buffImageList.remove(buffImageList.size() - 1);
+            }
+        }
+
     }
 }

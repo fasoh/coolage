@@ -20,20 +20,12 @@ public class ImageProcessor {
     Converter convert = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
 
-    public ImageProcessor(ArrayList<BufferedImage> rawImageList){
-        System.out.print("Converting Images to Mat - ");
-        int counter = 1;
-        for (BufferedImage bufferedImage : rawImageList){
-            matImageList.add(convert.BufferedToMat(bufferedImage));
-            System.out.print(counter + " ");
-            counter++;
-        }
-        System.out.println();
+    public ImageProcessor(ArrayList<Mat> matImageList){
+        this.matImageList = matImageList;
     }
 
     public void processImages(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin) {
 
-        this.matchImageCountWithWordCount(text);
         text = text.toUpperCase();
         BufferedImage finalImage = null;
         int counter = 0;
@@ -43,6 +35,7 @@ public class ImageProcessor {
             newSingleLetterImage = this.drawLettersOnGeneratedImage(newSingleLetterImage, text.charAt(counter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin);
 
             if (counter == 0) {
+                System.out.println("- Set as result image");
                 finalImage = newSingleLetterImage; //Avoids the case that picture 0 gets stitched to a copy of picture 0
             } else {
                 try {
@@ -56,22 +49,6 @@ public class ImageProcessor {
         }
 
         convert.saveBuffImgAsPNG(finalImage);
-
-    }
-
-    private void matchImageCountWithWordCount(String text) {
-        //Fill up rawImageList with pictures of itself in case there is more text than available pictures
-        if (text.length() > matImageList.size()){
-            int j = 0;
-            for (int i = matImageList.size(); i < text.length(); i++){
-                matImageList.add(matImageList.get(j));
-                j++;
-            }
-        } else { //Trims rawImageList to size of text if there are more images than text
-            for (int i = matImageList.size(); i > text.length(); i--){
-                matImageList.remove(matImageList.size() - 1);
-            }
-        }
 
     }
 
@@ -96,7 +73,7 @@ public class ImageProcessor {
 
     public BufferedImage drawLettersOnGeneratedImage(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
 
-        System.out.print("Applying text: ");
+        System.out.print("Applying text: '");
 
         BufferedImage textImage;
         if (letter == '\u00c4' || letter == '\u00d6' || letter == '\u00dc'){ //ä,ö,ü
@@ -129,15 +106,13 @@ public class ImageProcessor {
 
             textImage = setBackgroundColor(textImage, backgroundColor);
 
-            System.out.print(letter + " ");
+            System.out.print(letter + "' ");
 
             textImage = cropImage(textImage, margin);
         } else {
             textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
             System.out.print("  ");
         }
-
-        System.out.println(" - Success!");
 
         return textImage;
     }
@@ -183,6 +158,7 @@ public class ImageProcessor {
         if (textLength == 1) { //Special case for single-letter collage
             return convert.MatToBuffered(matImageList.get(0));
         } else {
+            System.out.println("- Stitching to previous image");
 
             BufferedImage resultImage;
 
