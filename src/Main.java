@@ -22,7 +22,7 @@ public class Main {
 
         ImageProcessor imageProcessor = new ImageProcessor(rawImageList);
         String fontUrl = "https://fonts.gstatic.com/s/oswald/v10/bH7276GfdCjMjApa_dkG6SZ2oysoEQEeKwjgmXLRnTc.ttf";
-        imageProcessor.processImages("Hallo welt", fontUrl, Color.WHITE, 250f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+        imageProcessor.processImages("herzlichen glückwunsch", fontUrl, Color.WHITE, 250f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
 
         System.out.println("Done!");
 

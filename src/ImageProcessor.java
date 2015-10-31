@@ -93,6 +93,9 @@ public class ImageProcessor {
         System.out.print("Applying text: ");
 
         BufferedImage textImage;
+        if (letter == '\u00c4' || letter == '\u00d6' || letter == '\u00dc'){ //ä,ö,ü
+            letter = letter.toString().toLowerCase().charAt(0);
+        }
 
         if (letter != ' '){
             textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
