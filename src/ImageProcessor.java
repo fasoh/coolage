@@ -6,6 +6,7 @@ import org.opencv.objdetect.CascadeClassifier;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public class ImageProcessor {
     ArrayList<Mat> matImageList = new ArrayList<Mat>();
     Converter convert = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
+    private int xOffset;
+    private int yOffset;
 
     public ImageProcessor(ArrayList<Mat> matImageList){
         this.matImageList = matImageList;
@@ -66,6 +69,8 @@ public class ImageProcessor {
         // Draw a bounding box around each face.
         for (Rect rect : faceDetections.toArray()) {
             Imgproc.rectangle(rawImage, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+            xOffset = rect.x;
+            yOffset = rect.y;
         }
 
         return convert.MatToBuffered(rawImage);
@@ -91,8 +96,9 @@ public class ImageProcessor {
                 font = loadResource.customFontFromFile(fontFace, fontSize);
             }
             GlyphVector gv = font.createGlyphVector(frc, letter.toString());
-            int xOff = textImage.getWidth()/2-100;
-            int yOff = textImage.getHeight()/2+75;
+            Rectangle2D box = gv.getVisualBounds();
+            int xOff = xOffset+(int)box.getX();
+            int yOff = yOffset+(int)-box.getY();
             Shape shape = gv.getOutline(xOff, yOff);
             g.setClip(shape);
             g.drawImage(buffImage, 0, 0, null);
