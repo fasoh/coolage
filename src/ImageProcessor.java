@@ -189,20 +189,18 @@ public class ImageProcessor {
     }
 
     private BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
+
+        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
         BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        for (int x = 0; x < buffImage.getWidth(); x++){
-            for (int y = 0; y < buffImage.getHeight(); y++){
-                int rgba = buffImage.getRGB(x,y);
-                boolean isTrans = (rgba & 0xff000000) == 0;
-                if (isTrans){
-                    newBuffImage.setRGB(x, y, (backgroundColor.getRGB()));
-                } else {
-                    newBuffImage.setRGB(x, y, rgba);
-                }
-            }
-        }
+
+        Graphics2D graphics = backgroundLayer.createGraphics();
+        graphics.setPaint(backgroundColor);
+        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
+
+        Graphics g = newBuffImage.getGraphics();
+        g.drawImage(backgroundLayer, 0, 0, null);
+        g.drawImage(buffImage, 0, 0, null);
 
         return newBuffImage;
     }
-
 }
