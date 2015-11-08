@@ -12,11 +12,11 @@ public class Main {
         ResourceLoader resourceLoader = new ResourceLoader();
 
         ArrayList<String> urlList = new ArrayList<String>();
-        urlList.add("http://i.imgur.com/nNAM4vu.jpg");
-        urlList.add("http://i.imgur.com/yAY2OnG.jpg");
-        urlList.add("http://i.imgur.com/IeC86Kx.jpg");
-        urlList.add("http://i.imgur.com/guEE2hm.jpg");
-        urlList.add("http://i.imgur.com/WTWvYcT.jpg");
+        urlList.add("http://lh3.ggpht.com/7pMIhD30CAwdtcrm3UGZVI45xRi8ynxNFe3tTUAEM76p35G62YklCZdR4JcHS9MR72_txTAGUBB8ozn1=s620");
+        urlList.add("http://lh4.ggpht.com/8MCTX5uAr5bJxXzVdkk-vETHKTHQQZVp9dl9xqaaBNcTfvjkl8P05elW7f1aSf5Gd_ewxs4Wpgcjqb-Xfsk=s620");
+        urlList.add("http://lh5.ggpht.com/fkOpCsPe9PNSEjcCzmWpbHbtOJ3MuMCujcj9jWmAwrE3KwoXTjQb5Eq4IGOSgWO2fEf9HP2rceZgh1d7=s620");
+        urlList.add("http://lh4.ggpht.com/2fNMXZyMEAVkvHJmRXmp6bERkgvXmrbGCY8G9M_ajyAN1M_L4RSO1sXRepVrHMQckvbUFNlgZLE69Hyy=s620");
+        urlList.add("http://lh4.ggpht.com/5X5I-rr9ZTPXp3r6twHgkhB2M3zobatltwrxr7HBwPSZpx_iFDieadQRlEKoXtPgy5pOlcRU0LAXSBhs=s620");
 
         ArrayList<Mat> matImageList = resourceLoader.downloadImages(urlList);
         String fontUrl = "https://fonts.gstatic.com/s/oswald/v10/bH7276GfdCjMjApa_dkG6SZ2oysoEQEeKwjgmXLRnTc.ttf";

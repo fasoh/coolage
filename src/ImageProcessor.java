@@ -1,11 +1,10 @@
 import org.opencv.core.*;
-import org.opencv.core.Point;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 public class ImageProcessor {
 
     ArrayList<Mat> matImageList = new ArrayList<Mat>();
-    Converter convert = new Converter();
+    Converter converter = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
     private int xOffset;
     private int yOffset;
@@ -31,31 +30,28 @@ public class ImageProcessor {
 
         text = text.toUpperCase();
         BufferedImage finalImage = null;
-        int counter = 0;
+        int glyphCounter = 0;
 
         for (Mat rawImage : matImageList){
-            BufferedImage newSingleLetterImage = this.detectFaces(rawImage);
-            newSingleLetterImage = this.drawLettersOnGeneratedImage(newSingleLetterImage, text.charAt(counter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin);
 
-            if (counter == 0) {
-                System.out.println("- Set as result image");
-                finalImage = newSingleLetterImage; //Avoids the case that picture 0 gets stitched to a copy of picture 0
+            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.7, 0, 0);
+
+            if (glyphCounter == 0) {
+                finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
             } else {
                 try {
-                    finalImage = stitchImages(finalImage, newSingleLetterImage, backgroundColor, text.length());
+                    finalImage = stitchImages(finalImage, photoGlyph, backgroundColor, text.length());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-
-            counter++;
+            glyphCounter++;
         }
 
-        convert.saveBuffImgAsPNG(finalImage);
-
+        converter.saveBuffImgAsPNG(finalImage);
     }
 
-    public BufferedImage detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
+    public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
         // Create a face detector from the cascade file in the resources directory.
         CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
@@ -66,6 +62,9 @@ public class ImageProcessor {
         faceDetector.detectMultiScale(rawImage, faceDetections);
         System.out.print(String.format("%s found - ", faceDetections.toArray().length));
 
+        return faceDetections.toArray();
+
+        /*
         // Draw a bounding box around each face.
         for (Rect rect : faceDetections.toArray()) {
             Imgproc.rectangle(rawImage, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
@@ -73,10 +72,11 @@ public class ImageProcessor {
             yOffset = rect.y;
         }
 
-        return convert.MatToBuffered(rawImage);
+        return converter.MatToBuffered(rawImage);
+        */
     }
 
-    public BufferedImage drawLettersOnGeneratedImage(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin){
+    public BufferedImage getPhotoGlygh(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
@@ -87,28 +87,34 @@ public class ImageProcessor {
 
         if (letter != ' '){
             textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = textImage.createGraphics();
-            FontRenderContext frc = g.getFontRenderContext();
+            Graphics2D letterImage = textImage.createGraphics();
+            FontRenderContext frc = letterImage.getFontRenderContext();
             Font font;
             if(fontFace.startsWith("http")){
                 font = loadResource.customFontFromUrl(fontFace, fontSize);
             } else {
                 font = loadResource.customFontFromFile(fontFace, fontSize);
             }
-            GlyphVector gv = font.createGlyphVector(frc, letter.toString());
-            Rectangle2D box = gv.getVisualBounds();
-            int xOff = xOffset+(int)box.getX();
-            int yOff = yOffset+(int)-box.getY();
-            Shape shape = gv.getOutline(xOff, yOff);
-            g.setClip(shape);
-            g.drawImage(buffImage, 0, 0, null);
-            g.setClip(null);
-            g.setStroke(new BasicStroke(borderSize));
-            g.setColor(borderColor);
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.draw(shape);
+            GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
+            Rectangle2D glyphBox = glyphVector.getVisualBounds();
+            int xOff = xOffset+(int)glyphBox.getX();
+            int yOff = yOffset+(int)-glyphBox.getY();
+            Shape shape = glyphVector.getOutline(xOff+offsetX, yOff+offsetY);
 
-            g.dispose();
+            letterImage.setClip(shape); // Deactive to see letter position in image
+
+            int scaleX = (int)(buffImage.getWidth() * imageScale);
+            int scaleY = (int)(buffImage.getHeight() * imageScale);
+
+            Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
+
+            letterImage.drawImage(scaledImage, 0, 0, null);
+            letterImage.setStroke(new BasicStroke(borderSize));
+            letterImage.setColor(borderColor);
+            letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            letterImage.draw(shape);
+
+            letterImage.dispose();
 
             textImage = setBackgroundColor(textImage, backgroundColor);
 
@@ -157,30 +163,30 @@ public class ImageProcessor {
     }
 
 
-    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage newSingleLetterImage, Color backgroundColor, int textLength) throws IOException {
+    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor, int textLength) throws IOException {
 
-        //Stitches images firstImage and newSingleLetterImage together (which becomes the new firstImage for the next iteration)
+        //Stitches images firstImage and secondImage together (which becomes the new firstImage for the next iteration)
 
         if (textLength == 1) { //Special case for single-letter collage
-            return convert.MatToBuffered(matImageList.get(0));
+            return converter.MatToBuffered(matImageList.get(0));
         } else {
             System.out.println("- Stitching to previous image");
 
             BufferedImage resultImage;
 
             int newHeight;
-            if (newSingleLetterImage.getHeight() > firstImage.getHeight()){
-                newHeight = newSingleLetterImage.getHeight();
+            if (secondImage.getHeight() > firstImage.getHeight()){
+                newHeight = secondImage.getHeight();
             } else {
                 newHeight = firstImage.getHeight();
             }
 
             resultImage = new BufferedImage(firstImage.getWidth() +
-                    newSingleLetterImage.getWidth(), newHeight,
+                    secondImage.getWidth(), newHeight,
                     BufferedImage.TYPE_INT_ARGB);
             Graphics g = resultImage.getGraphics();
             g.drawImage(firstImage, 0, 0, null);
-            g.drawImage(newSingleLetterImage, firstImage.getWidth(), newHeight - newSingleLetterImage.getHeight(), null);
+            g.drawImage(secondImage, firstImage.getWidth(), newHeight - secondImage.getHeight(), null);
 
             resultImage = setBackgroundColor(resultImage, backgroundColor);
             return resultImage;

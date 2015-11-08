@@ -27,7 +27,7 @@ public class Converter {
             throw new IllegalArgumentException("original == null");
         }
 
-        // Don't convert if it already has correct type
+        // Don't converter if it already has correct type
         if (original.getType() == type) {
             return original;
         }
