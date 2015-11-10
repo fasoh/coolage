@@ -41,7 +41,7 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.7, 0, 0);
+            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 0, 0);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
