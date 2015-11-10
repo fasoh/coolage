@@ -20,7 +20,7 @@ public class Main {
 
         ArrayList<Mat> matImageList = resourceLoader.downloadImages(urlList);
         String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-        String text = "heile";
+        String text = "hallo dario";
         resourceLoader.matchImageCountWithWordCount(text, matImageList);
 
         ImageProcessor imageProcessor = new ImageProcessor(matImageList);

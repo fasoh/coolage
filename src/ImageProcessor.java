@@ -4,7 +4,6 @@ import org.opencv.objdetect.CascadeClassifier;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -19,8 +18,6 @@ public class ImageProcessor {
     ArrayList<Mat> matImageList = new ArrayList<Mat>();
     Converter converter = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
-    private int xOffset;
-    private int yOffset;
 
     public ImageProcessor(ArrayList<Mat> matImageList){
         this.matImageList = matImageList;
@@ -84,7 +81,7 @@ public class ImageProcessor {
 
     public double getQualityOfPosition(BufferedImage buffImage, Character letter, String fontFace, float fontSize, double imageScale, int offsetX, int offsetY) {
 
-        //BufferedImage photo = getPhotoGlygh(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
+        //BufferedImage photo = getPhotoGlyph(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
 
         //converter.saveBuffImgAsPNG(photo, "quality");
 
@@ -111,8 +108,8 @@ public class ImageProcessor {
 
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
             Rectangle2D glyphBox = glyphVector.getVisualBounds();
-            int xOff = xOffset+(int)glyphBox.getX();
-            int yOff = yOffset+(int)-glyphBox.getY();
+            int xOff = (int)glyphBox.getX();
+            int yOff = (int)-glyphBox.getY();
             Shape shape = glyphVector.getOutline(xOff+offsetX, yOff+offsetY);
 
             letterImage.setClip(shape); // Deactivate to see letter position in image
