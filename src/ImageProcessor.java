@@ -4,6 +4,7 @@ import org.opencv.objdetect.CascadeClassifier;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -31,16 +32,9 @@ public class ImageProcessor {
         BufferedImage finalImage = null;
         int glyphCounter = 0;
 
-        Font font;
-        if(fontFace.startsWith("http")){
-            font = loadResource.customFontFromUrl(fontFace, fontSize);
-        } else {
-            font = loadResource.customFontFromFile(fontFace, fontSize);
-        }
-
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 2, 2);
+            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.7, 0, 0);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -54,7 +48,7 @@ public class ImageProcessor {
             glyphCounter++;
         }
 
-        converter.saveBuffImgAsPNG(finalImage);
+        converter.saveBuffImgAsPNG(finalImage, "collage");
     }
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
@@ -82,7 +76,17 @@ public class ImageProcessor {
         */
     }
 
-    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
+    public double getQualityOfPosition(BufferedImage buffImage, Character letter, String fontFace, float fontSize, double imageScale, int offsetX, int offsetY) {
+
+        //BufferedImage photo = getPhotoGlygh(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
+
+        //converter.saveBuffImgAsPNG(photo, "quality");
+
+
+        return 0;
+    }
+
+    public BufferedImage getPhotoGlygh(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
@@ -92,13 +96,15 @@ public class ImageProcessor {
         }
 
         if (letter != ' '){
-            int scaleX = (int)(buffImage.getWidth() * imageScale);
-            int scaleY = (int)(buffImage.getHeight() * imageScale);
-
-            textImage = new BufferedImage(scaleX, scaleY, BufferedImage.TYPE_INT_ARGB);
+            textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D letterImage = textImage.createGraphics();
             FontRenderContext frc = letterImage.getFontRenderContext();
-
+            Font font;
+            if(fontFace.startsWith("http")){
+                font = loadResource.customFontFromUrl(fontFace, fontSize);
+            } else {
+                font = loadResource.customFontFromFile(fontFace, fontSize);
+            }
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
             Rectangle2D glyphBox = glyphVector.getVisualBounds();
             int xOff = xOffset+(int)glyphBox.getX();
@@ -107,13 +113,13 @@ public class ImageProcessor {
 
             letterImage.setClip(shape); // Deactivate to see letter position in image
 
-
+            int scaleX = (int)(buffImage.getWidth() * imageScale);
+            int scaleY = (int)(buffImage.getHeight() * imageScale);
 
             Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
             letterImage.drawImage(scaledImage, 0, 0, null);
             letterImage.setClip(null);
-
             letterImage.setStroke(new BasicStroke(borderSize));
             letterImage.setColor(borderColor);
             letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -127,7 +133,7 @@ public class ImageProcessor {
 
             textImage = cropImage(textImage, margin);
         } else {
-            textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
+            textImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
             System.out.print("  ");
         }
 
@@ -156,12 +162,12 @@ public class ImageProcessor {
         }
 
         //Create new BufferedImage to paste the cropped content on
-        BufferedImage croppedImage = new BufferedImage( (bottomX - topX + margin*2),
-                (bottomY - topY + margin*2), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage croppedImage = new BufferedImage( (bottomX - topX + 1 + margin),
+                (bottomY - topY + 1 + margin), BufferedImage.TYPE_INT_ARGB);
 
         //Fill newly created image
         croppedImage.getGraphics().drawImage(source, 0, 0,
-                (croppedImage.getWidth()), (croppedImage.getHeight()),
+                croppedImage.getWidth(), croppedImage.getHeight(),
                 topX - margin, topY - margin, bottomX + margin, bottomY + margin, null);
 
         return croppedImage;
