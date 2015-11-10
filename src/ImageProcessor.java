@@ -40,7 +40,7 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 2, 2);
+            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 12, 2);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -106,8 +106,6 @@ public class ImageProcessor {
             Shape shape = glyphVector.getOutline(xOff+offsetX, yOff+offsetY);
 
             letterImage.setClip(shape); // Deactivate to see letter position in image
-
-
 
             Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
