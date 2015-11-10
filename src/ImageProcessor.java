@@ -18,6 +18,8 @@ public class ImageProcessor {
     ArrayList<Mat> matImageList = new ArrayList<Mat>();
     Converter converter = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
+    private int xOffset;
+    private int yOffset;
 
     public ImageProcessor(ArrayList<Mat> matImageList){
         this.matImageList = matImageList;
@@ -37,7 +39,8 @@ public class ImageProcessor {
         }
 
         for (Mat rawImage : matImageList){
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), backgroundColor, borderSize, borderColor, margin, 0.9, 0, 0);
+
+            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 2, 2);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -51,7 +54,7 @@ public class ImageProcessor {
             glyphCounter++;
         }
 
-        converter.saveBuffImgAsPNG(finalImage, "collage");
+        converter.saveBuffImgAsPNG(finalImage);
     }
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
@@ -79,17 +82,7 @@ public class ImageProcessor {
         */
     }
 
-    public double getQualityOfPosition(BufferedImage buffImage, Character letter, String fontFace, float fontSize, double imageScale, int offsetX, int offsetY) {
-
-        //BufferedImage photo = getPhotoGlyph(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
-
-        //converter.saveBuffImgAsPNG(photo, "quality");
-
-
-        return 0;
-    }
-
-    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, Color backgroundColor, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
+    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
@@ -108,17 +101,19 @@ public class ImageProcessor {
 
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
             Rectangle2D glyphBox = glyphVector.getVisualBounds();
-            int xOff = (int)glyphBox.getX();
-            int yOff = (int)-glyphBox.getY();
+            int xOff = xOffset+(int)glyphBox.getX();
+            int yOff = yOffset+(int)-glyphBox.getY();
             Shape shape = glyphVector.getOutline(xOff+offsetX, yOff+offsetY);
 
             letterImage.setClip(shape); // Deactivate to see letter position in image
+
 
 
             Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
             letterImage.drawImage(scaledImage, 0, 0, null);
             letterImage.setClip(null);
+
             letterImage.setStroke(new BasicStroke(borderSize));
             letterImage.setColor(borderColor);
             letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
