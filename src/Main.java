@@ -19,8 +19,8 @@ public class Main {
         urlList.add("http://lh4.ggpht.com/5X5I-rr9ZTPXp3r6twHgkhB2M3zobatltwrxr7HBwPSZpx_iFDieadQRlEKoXtPgy5pOlcRU0LAXSBhs=s620");
 
         ArrayList<Mat> matImageList = resourceLoader.downloadImages(urlList);
-        String fontUrl = "https://fonts.gstatic.com/s/oswald/v10/bH7276GfdCjMjApa_dkG6SZ2oysoEQEeKwjgmXLRnTc.ttf";
-        String text = "hallo welt";
+        String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
+        String text = "ossietzky jahflkcny";
         resourceLoader.matchImageCountWithWordCount(text, matImageList);
 
         ImageProcessor imageProcessor = new ImageProcessor(matImageList);
