@@ -4,6 +4,7 @@ import org.opencv.objdetect.CascadeClassifier;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), backgroundColor, borderSize, borderColor, margin, 0.9, 2, 2);
+            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.7, 0, 0);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -54,7 +55,7 @@ public class ImageProcessor {
             glyphCounter++;
         }
 
-        converter.saveBuffImgAsPNG(finalImage);
+        converter.saveBuffImgAsPNG(finalImage, "collage");
     }
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
@@ -84,7 +85,7 @@ public class ImageProcessor {
 
     public double getQualityOfPosition(BufferedImage buffImage, Character letter, String fontFace, float fontSize, double imageScale, int offsetX, int offsetY) {
 
-        //BufferedImage photo = getPhotoGlyph(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
+        //BufferedImage photo = getPhotoGlygh(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
 
         //converter.saveBuffImgAsPNG(photo, "quality");
 
@@ -118,12 +119,10 @@ public class ImageProcessor {
             letterImage.setClip(shape); // Deactivate to see letter position in image
 
 
-
             Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
             letterImage.drawImage(scaledImage, 0, 0, null);
             letterImage.setClip(null);
-
             letterImage.setStroke(new BasicStroke(borderSize));
             letterImage.setColor(borderColor);
             letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -171,7 +170,7 @@ public class ImageProcessor {
 
         //Fill newly created image
         croppedImage.getGraphics().drawImage(source, 0, 0,
-                croppedImage.getWidth(), croppedImage.getHeight(),
+                (croppedImage.getWidth()), (croppedImage.getHeight()),
                 topX - margin, topY - margin, bottomX + margin, bottomY + margin, null);
 
         return croppedImage;

@@ -13,9 +13,9 @@ import java.io.IOException;
  */
 public class Converter {
 
-    public void saveBuffImgAsPNG(BufferedImage buffImage) {
+    public void saveBuffImgAsPNG(BufferedImage buffImage, String name) {
         try {
-            ImageIO.write(buffImage, "png", new File(System.getProperty("user.dir") + "/collage.png"));
+            ImageIO.write(buffImage, "png", new File(System.getProperty("user.dir") + "/" + name + ".png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
