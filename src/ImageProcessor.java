@@ -40,7 +40,7 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 2, 2);
+            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), backgroundColor, borderSize, borderColor, margin, 0.9, 2, 2);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -82,7 +82,17 @@ public class ImageProcessor {
         */
     }
 
-    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
+    public double getQualityOfPosition(BufferedImage buffImage, Character letter, String fontFace, float fontSize, double imageScale, int offsetX, int offsetY) {
+
+        //BufferedImage photo = getPhotoGlyph(buffImage, letter, fontFace, new Color(0, 0, 0, 255), fontSize, 0, new Color(0), 0, imageScale, offsetX, offsetY);
+
+        //converter.saveBuffImgAsPNG(photo, "quality");
+
+
+        return 0;
+    }
+
+    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, Color backgroundColor, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
@@ -161,7 +171,7 @@ public class ImageProcessor {
 
         //Fill newly created image
         croppedImage.getGraphics().drawImage(source, 0, 0,
-                (croppedImage.getWidth()), (croppedImage.getHeight()),
+                croppedImage.getWidth(), croppedImage.getHeight(),
                 topX - margin, topY - margin, bottomX + margin, bottomY + margin, null);
 
         return croppedImage;
