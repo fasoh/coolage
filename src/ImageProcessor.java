@@ -155,12 +155,12 @@ public class ImageProcessor {
         }
 
         //Create new BufferedImage to paste the cropped content on
-        BufferedImage croppedImage = new BufferedImage( (bottomX - topX + 1 + margin),
-                (bottomY - topY + 1 + margin), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage croppedImage = new BufferedImage( (bottomX - topX + margin),
+                (bottomY - topY + margin), BufferedImage.TYPE_INT_ARGB);
 
         //Fill newly created image
         croppedImage.getGraphics().drawImage(source, 0, 0,
-                croppedImage.getWidth(), croppedImage.getHeight(),
+                (croppedImage.getWidth() + margin), (croppedImage.getHeight() + margin),
                 topX - margin, topY - margin, bottomX + margin, bottomY + margin, null);
 
         return croppedImage;
