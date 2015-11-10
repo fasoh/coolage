@@ -4,7 +4,6 @@ import org.opencv.objdetect.CascadeClassifier;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -32,9 +31,16 @@ public class ImageProcessor {
         BufferedImage finalImage = null;
         int glyphCounter = 0;
 
+        Font font;
+        if(fontFace.startsWith("http")){
+            font = loadResource.customFontFromUrl(fontFace, fontSize);
+        } else {
+            font = loadResource.customFontFromFile(fontFace, fontSize);
+        }
+
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 2, 2);
+            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 2, 2);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -76,7 +82,7 @@ public class ImageProcessor {
         */
     }
 
-    public BufferedImage getPhotoGlygh(BufferedImage buffImage, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
+    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
@@ -92,12 +98,7 @@ public class ImageProcessor {
             textImage = new BufferedImage(scaleX, scaleY, BufferedImage.TYPE_INT_ARGB);
             Graphics2D letterImage = textImage.createGraphics();
             FontRenderContext frc = letterImage.getFontRenderContext();
-            Font font;
-            if(fontFace.startsWith("http")){
-                font = loadResource.customFontFromUrl(fontFace, fontSize);
-            } else {
-                font = loadResource.customFontFromFile(fontFace, fontSize);
-            }
+
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
             Rectangle2D glyphBox = glyphVector.getVisualBounds();
             int xOff = xOffset+(int)glyphBox.getX();
