@@ -108,7 +108,10 @@ public class ImageProcessor {
 
             Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
+
+
             letterImage.drawImage(scaledImage, 0, 0, null);
+            letterImage.setClip(null);
             letterImage.setStroke(new BasicStroke(borderSize));
             letterImage.setColor(borderColor);
             letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
