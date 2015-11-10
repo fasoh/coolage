@@ -24,7 +24,7 @@ public class Main {
         resourceLoader.matchImageCountWithWordCount(text, matImageList);
 
         ImageProcessor imageProcessor = new ImageProcessor(matImageList);
-        imageProcessor.processImages(text, fontUrl, Color.WHITE, 250f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+        imageProcessor.processImages(text, fontUrl, Color.WHITE, 400f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
 
         System.out.println("Done!");
 

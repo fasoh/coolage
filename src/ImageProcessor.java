@@ -34,7 +34,7 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.7, 0, 0);
+            BufferedImage photoGlyph = this.getPhotoGlygh(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 0, 0);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -86,7 +86,10 @@ public class ImageProcessor {
         }
 
         if (letter != ' '){
-            textImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            int scaleX = (int)(buffImage.getWidth() * imageScale);
+            int scaleY = (int)(buffImage.getHeight() * imageScale);
+
+            textImage = new BufferedImage(scaleX, scaleY, BufferedImage.TYPE_INT_ARGB);
             Graphics2D letterImage = textImage.createGraphics();
             FontRenderContext frc = letterImage.getFontRenderContext();
             Font font;
@@ -103,15 +106,13 @@ public class ImageProcessor {
 
             letterImage.setClip(shape); // Deactive to see letter position in image
 
-            int scaleX = (int)(buffImage.getWidth() * imageScale);
-            int scaleY = (int)(buffImage.getHeight() * imageScale);
+
 
             Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
-
-
             letterImage.drawImage(scaledImage, 0, 0, null);
             letterImage.setClip(null);
+
             letterImage.setStroke(new BasicStroke(borderSize));
             letterImage.setColor(borderColor);
             letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
