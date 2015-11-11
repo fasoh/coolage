@@ -4,9 +4,13 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 
 /**
@@ -52,19 +56,15 @@ public class ResourceLoader {
         return matImageList;
     }
 
-    public Font customFontFromFile(String fontName, float fontSize) {
+    public Font customFontFromFile(String fontName, float fontSize) throws FileNotFoundException {
         Font customFont = null;
 
         try {
-            //create the font to use (.ttf)
-            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName)).deriveFont(fontSize);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            //register the font
-            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName)));
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName));
+
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-        catch(FontFormatException e) {
+            throw new FileNotFoundException();
+        } catch(FontFormatException e) {
             e.printStackTrace();
         }
 
@@ -72,6 +72,8 @@ public class ResourceLoader {
     }
 
     public Font customFontFromUrl(String urlString, float fontSize){
+
+        System.out.println("Downloading font");
         Font customFont = null;
 
         try {
@@ -81,6 +83,11 @@ public class ResourceLoader {
             GraphicsEnvironment ge =
                     GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
+
+            ReadableByteChannel rbc = Channels.newChannel(fontUrl.openStream());
+            FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/src/resources/" + urlString.split("/")[urlString.split("/").length-1]);
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (FontFormatException e) {
@@ -109,4 +116,19 @@ public class ResourceLoader {
         return img;
     }
 
+    public Font getFont(String url, float fontSize) {
+
+        Font font;
+
+        try {
+            font = this.customFontFromFile(url.split("/")[url.split("/").length-1], fontSize);
+        } catch (FileNotFoundException e) {
+            font = this.customFontFromUrl(url, fontSize);
+
+            // Save font for later use
+            File file = new File(System.getProperty("user.dir") + "/src/resources/" + font.getFontName());
+        }
+
+        return font;
+    }
 }

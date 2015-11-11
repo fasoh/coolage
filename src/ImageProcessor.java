@@ -26,11 +26,7 @@ public class ImageProcessor {
 
     public ImageProcessor(String fontFace, float fontSize, Color backgroundColor,  float borderSize, Color borderColor, int margin) {
 
-        if(fontFace.startsWith("http")){
-            this.font = loadResource.customFontFromUrl(fontFace, fontSize);
-        } else {
-            this.font = loadResource.customFontFromFile(fontFace, fontSize);
-        }
+        this.font = loadResource.getFont(fontFace, fontSize);
 
         this.backgroundColor = backgroundColor;
         this.borderSize = borderSize;
