@@ -18,29 +18,35 @@ public class ImageProcessor {
     ArrayList<Mat> matImageList = new ArrayList<Mat>();
     Converter converter = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
-    private int xOffset;
-    private int yOffset;
+    private Font font;
+    private Color backgroundColor;
+    private float borderSize;
+    private Color borderColor;
+    private int margin;
 
-    public ImageProcessor(ArrayList<Mat> matImageList){
-        this.matImageList = matImageList;
+    public ImageProcessor(String fontFace, float fontSize, Color backgroundColor,  float borderSize, Color borderColor, int margin) {
+
+        if(fontFace.startsWith("http")){
+            this.font = loadResource.customFontFromUrl(fontFace, fontSize);
+        } else {
+            this.font = loadResource.customFontFromFile(fontFace, fontSize);
+        }
+
+        this.backgroundColor = backgroundColor;
+        this.borderSize = borderSize;
+        this.borderColor = borderColor;
+        this.margin = margin;
     }
 
-    public void processImages(String text, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin) {
+    public BufferedImage processImages(ArrayList<Mat> matImageList, String text) {
 
         text = text.toUpperCase();
         BufferedImage finalImage = null;
         int glyphCounter = 0;
 
-        Font font;
-        if(fontFace.startsWith("http")){
-            font = loadResource.customFontFromUrl(fontFace, fontSize);
-        } else {
-            font = loadResource.customFontFromFile(fontFace, fontSize);
-        }
-
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), fontFace, backgroundColor, fontSize, borderSize, borderColor, margin, 0.9, 12, 2);
+            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), 0.9, 12, 2);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -54,7 +60,7 @@ public class ImageProcessor {
             glyphCounter++;
         }
 
-        converter.saveBuffImgAsPNG(finalImage);
+        return finalImage;
     }
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
@@ -82,7 +88,7 @@ public class ImageProcessor {
         */
     }
 
-    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, String fontFace, Color backgroundColor, float fontSize, float borderSize, Color borderColor, int margin, double imageScale, int offsetX, int offsetY) {
+    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
@@ -101,8 +107,8 @@ public class ImageProcessor {
 
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
             Rectangle2D glyphBox = glyphVector.getVisualBounds();
-            int xOff = xOffset+(int)glyphBox.getX();
-            int yOff = yOffset+(int)-glyphBox.getY();
+            int xOff = (int)glyphBox.getX();
+            int yOff = (int)-glyphBox.getY();
             Shape shape = glyphVector.getOutline(xOff+offsetX, yOff+offsetY);
 
             letterImage.setClip(shape); // Deactivate to see letter position in image

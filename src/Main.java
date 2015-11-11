@@ -1,6 +1,7 @@
 import org.opencv.core.*;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class Main {
@@ -23,10 +24,12 @@ public class Main {
         String text = "abcdefghijklmnopqrstuvwxyz";
         resourceLoader.matchImageCountWithWordCount(text, matImageList);
 
-        ImageProcessor imageProcessor = new ImageProcessor(matImageList);
-        imageProcessor.processImages(text, fontUrl, Color.WHITE, 400f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+        ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15);
+        BufferedImage collage = imageProcessor.processImages(matImageList, text);
+
+        Converter converter = new Converter();
+        converter.saveBuffImgAsPNG(collage);
 
         System.out.println("Done!");
-
     }
 }
