@@ -60,8 +60,7 @@ public class ResourceLoader {
         Font customFont = null;
 
         try {
-            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName));
-
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName)).deriveFont(Font.PLAIN, fontSize);
         } catch (IOException e) {
             throw new FileNotFoundException();
         } catch(FontFormatException e) {
