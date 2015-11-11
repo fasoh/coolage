@@ -16,10 +16,31 @@ public class ResourceLoader {
 
     Converter convert = new Converter();
 
-    public ArrayList<Mat> downloadImages(ArrayList<String> urlList){
+    public ArrayList<Mat> getImages(String text, ArrayList<String> urlList){
         System.out.print("Downloading picture - ");
-        int outputCounter = 1;
         ArrayList<Mat> matImageList = new ArrayList<Mat>();
+
+        if (text.length() > urlList.size()){
+            System.out.println("Filling up imageList (text > imageList.size())");
+            downloadImagesFromList(matImageList, urlList);
+            int j = 0;
+            for (int i = urlList.size(); i < text.length(); i++){
+                matImageList.add(matImageList.get(j));
+                j++;
+            }
+        } else { //Trims rawImageList to size of text if there are more images than text
+            System.out.println("Trimming imageList (text < imageList.size())");
+            for (int i = urlList.size(); i > text.length(); i--){
+                urlList.remove(urlList.size() - 1);
+            }
+            downloadImagesFromList(matImageList, urlList);
+        }
+
+        return matImageList;
+    }
+
+    public ArrayList<Mat> downloadImagesFromList(ArrayList<Mat> matImageList, ArrayList<String> urlList){
+        int outputCounter = 1;
         for (String url : urlList){
             System.out.print(outputCounter + " ");
             BufferedImage buffImage = this.imageFromURL(url);
@@ -43,8 +64,7 @@ public class ResourceLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        catch(FontFormatException e)
-        {
+        catch(FontFormatException e) {
             e.printStackTrace();
         }
 
@@ -89,21 +109,4 @@ public class ResourceLoader {
         return img;
     }
 
-    public void matchImageCountWithWordCount(String text, ArrayList<Mat> buffImageList) {
-        //Fill up rawImageList with pictures of itself in case there is more text than available pictures
-        if (text.length() > buffImageList.size()){
-            System.out.println("Filling up imageList (text > imageList.size())");
-            int j = 0;
-            for (int i = buffImageList.size(); i < text.length(); i++){
-                buffImageList.add(buffImageList.get(j));
-                j++;
-            }
-        } else { //Trims rawImageList to size of text if there are more images than text
-            System.out.println("Trimming imageList (text < imageList.size())");
-            for (int i = buffImageList.size(); i > text.length(); i--){
-                buffImageList.remove(buffImageList.size() - 1);
-            }
-        }
-
-    }
 }

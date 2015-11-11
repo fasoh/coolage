@@ -44,6 +44,7 @@ public class ImageProcessor {
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
+                System.out.println();
             } else {
                 try {
                     finalImage = stitchImages(finalImage, photoGlyph, backgroundColor, text.length());
