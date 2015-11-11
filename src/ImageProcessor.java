@@ -46,7 +46,7 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), font, text.charAt(glyphCounter), 0.9, 12, 2);
+            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), 0.7, 0, 0);
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -89,7 +89,7 @@ public class ImageProcessor {
         */
     }
 
-    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Font font, Character letter, double imageScale, int offsetX, int offsetY) {
+    public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
 
         System.out.print("Applying text: '");
 
