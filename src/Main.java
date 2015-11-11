@@ -1,6 +1,7 @@
 import org.opencv.core.*;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class Main {
@@ -18,13 +19,17 @@ public class Main {
         urlList.add("http://lh4.ggpht.com/2fNMXZyMEAVkvHJmRXmp6bERkgvXmrbGCY8G9M_ajyAN1M_L4RSO1sXRepVrHMQckvbUFNlgZLE69Hyy=s620");
         urlList.add("http://lh4.ggpht.com/5X5I-rr9ZTPXp3r6twHgkhB2M3zobatltwrxr7HBwPSZpx_iFDieadQRlEKoXtPgy5pOlcRU0LAXSBhs=s620");
 
+        ArrayList<Mat> matImageList = resourceLoader.downloadImages(urlList);
         String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-        String text = "abc";
+        String text = "abcdefghijklmnopqrstuvwxyz";
+        resourceLoader.matchImageCountWithWordCount(text, matImageList);
 
-        ImageProcessor imageProcessor = new ImageProcessor(resourceLoader.getImages(text, urlList));
-        imageProcessor.processImages(text, fontUrl, Color.WHITE, 400f, 2f, Color.BLACK, 15); //(text, fontFace, backgroundColor, fontSize, borderSize, borderColor, margin)
+        ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15);
+        BufferedImage collage = imageProcessor.processImages(matImageList, text);
+
+        Converter converter = new Converter();
+        converter.saveBuffImgAsPNG(collage);
 
         System.out.println("Done!");
-
     }
 }
