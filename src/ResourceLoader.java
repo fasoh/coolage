@@ -47,7 +47,7 @@ public class ResourceLoader {
         int outputCounter = 1;
         for (String url : urlList){
             System.out.print(outputCounter + " ");
-            BufferedImage buffImage = this.imageFromURL(url);
+            BufferedImage buffImage = this.getImage(url);
             Mat matImage = convert.BufferedToMat(buffImage);
             matImageList.add(matImage);
             outputCounter++;
@@ -98,7 +98,27 @@ public class ResourceLoader {
         return customFont;
     }
 
-    public BufferedImage imageFromURL(String urlString) {
+    public BufferedImage getImage(String url) {
+
+        BufferedImage image = null;
+        String fileName = url.split("/")[url.split("/").length-1];
+
+        // Try finding local image – else download from source
+        try {
+            image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/resources/" + fileName);
+        } catch (IOException e) {
+
+            try {
+                image = this.imageFromURL(url);
+                ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/resources/" + fileName));
+            } catch (IOException f) {
+                f.printStackTrace();
+            }
+        }
+        return image;
+    }
+
+    public BufferedImage imageFromURL(String urlString) throws IOException {
         URL imageURL;
         BufferedImage img = null;
 
@@ -108,10 +128,7 @@ public class ResourceLoader {
             img = convert.toBufferedImageOfType(ImageIO.read(imageURL), BufferedImage.TYPE_3BYTE_BGR);
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
         return img;
     }
 
@@ -123,9 +140,6 @@ public class ResourceLoader {
             font = this.customFontFromFile(url.split("/")[url.split("/").length-1], fontSize);
         } catch (FileNotFoundException e) {
             font = this.customFontFromUrl(url, fontSize);
-
-            // Save font for later use
-            File file = new File(System.getProperty("user.dir") + "/src/resources/" + font.getFontName());
         }
 
         return font;
