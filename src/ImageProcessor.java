@@ -44,8 +44,12 @@ public class ImageProcessor {
 
         for (Mat rawImage : matImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), 0.7, 0, 0);
-            System.out.print("- Quality index: " + getQualityOfPosition(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), 0.7, 0, 0) + " ");
+            BufferedImage buffImage = converter.MatToBuffered(rawImage);
+
+            System.out.print("Applying text: '" + text.charAt(glyphCounter) + "' ");
+
+            BufferedImage photoGlyph = this.getPhotoGlyph(buffImage, text.charAt(glyphCounter), 0.7, 0, 0);
+            System.out.print("Quality index: " + getQualityOfPosition(buffImage, text.charAt(glyphCounter), 0.7, 0, 0) + " ");
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -78,8 +82,6 @@ public class ImageProcessor {
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
-
-        System.out.print("Applying text: '");
 
         BufferedImage textImage;
         if (letter == '\u00c4' || letter == '\u00d6' || letter == '\u00dc'){ //ä,ö,ü
@@ -115,8 +117,6 @@ public class ImageProcessor {
             letterImage.dispose();
 
             textImage = setBackgroundColor(textImage, backgroundColor);
-
-            System.out.print(letter + "' ");
 
             textImage = cropImage(textImage, margin);
         } else {
