@@ -1,11 +1,13 @@
 import org.opencv.core.*;
 import org.opencv.objdetect.CascadeClassifier;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -43,6 +45,7 @@ public class ImageProcessor {
         for (Mat rawImage : matImageList){
 
             BufferedImage photoGlyph = this.getPhotoGlyph(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), 0.7, 0, 0);
+            System.out.print("- Quality index: " + getQualityOfPosition(converter.MatToBuffered(rawImage), text.charAt(glyphCounter), 0.7, 0, 0) + " ");
 
             if (glyphCounter == 0) {
                 finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
@@ -72,17 +75,6 @@ public class ImageProcessor {
         System.out.print(String.format("%s found - ", faceDetections.toArray().length));
 
         return faceDetections.toArray();
-
-        /*
-        // Draw a bounding box around each face.
-        for (Rect rect : faceDetections.toArray()) {
-            Imgproc.rectangle(rawImage, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
-            xOffset = rect.x;
-            yOffset = rect.y;
-        }
-
-        return converter.MatToBuffered(rawImage);
-        */
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
@@ -133,6 +125,57 @@ public class ImageProcessor {
         }
 
         return textImage;
+    }
+
+    private double getQualityOfPosition(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
+
+        BufferedImage qualityAreas = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Rect[] faces = this.detectFaces(converter.BufferedToMat(buffImage));
+
+        Graphics2D canvas = qualityAreas.createGraphics();
+        canvas.setColor(Color.RED);
+
+        if (faces.length == 0) {
+            return 0;
+        } else {
+            for (Rect face : faces) {
+                canvas.fill(new Rectangle(face.x, face.y, face.width, face.height));
+            }
+            canvas.dispose();
+
+            BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
+
+            // Save image for visualisation
+            try {
+                ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/src/quality.jpg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return ((double)this.countQualityPixels(croppedQualityAres) / (double)this.countQualityPixels(qualityAreas));
+        }
+    }
+
+    /**
+     * Counts the number of red pixels in a given image
+     * @param qualityAreas Quality Image
+     * @return number of black pixels
+     */
+
+    private int countQualityPixels (BufferedImage qualityAreas) {
+
+        int photoWidth = qualityAreas.getWidth();
+        int photoHeight = qualityAreas.getHeight();
+        int qualitypixels = 0;
+
+        for (int x = 0; x < photoWidth; x++) {
+            for (int y = 0; y < photoHeight; y++) {
+                if (qualityAreas.getRGB(x, y) == 0xFFFF0000) {
+                    qualitypixels++;
+                }
+            }
+        }
+        return qualitypixels;
     }
 
     public BufferedImage cropImage(BufferedImage source, int margin) {
