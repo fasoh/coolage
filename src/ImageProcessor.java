@@ -53,7 +53,7 @@ public class ImageProcessor {
                 System.out.println();
             } else {
                 try {
-                    finalImage = stitchImages(finalImage, photoGlyph, backgroundColor, text.length());
+                    finalImage = stitchImages(finalImage, photoGlyph, backgroundColor);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -209,7 +209,7 @@ public class ImageProcessor {
     }
 
 
-    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor, int textLength) throws IOException {
+    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor) throws IOException {
 
         //Stitches images firstImage and secondImage together (which becomes the new firstImage for the next iteration)
         System.out.println("- Stitching to previous image");
