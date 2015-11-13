@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 public class ImageProcessor {
 
-    ArrayList<Mat> matImageList = new ArrayList<Mat>();
     Converter converter = new Converter();
     ResourceLoader loadResource = new ResourceLoader();
     private Font font;
@@ -29,7 +28,6 @@ public class ImageProcessor {
     public ImageProcessor(String fontFace, float fontSize, Color backgroundColor,  float borderSize, Color borderColor, int margin) {
 
         this.font = loadResource.getFont(fontFace, fontSize);
-
         this.backgroundColor = backgroundColor;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
@@ -45,14 +43,13 @@ public class ImageProcessor {
         for (Mat rawImage : matImageList){
 
             BufferedImage buffImage = converter.MatToBuffered(rawImage);
-
             System.out.print("Applying text: '" + text.charAt(glyphCounter) + "' ");
 
             BufferedImage photoGlyph = this.getPhotoGlyph(buffImage, text.charAt(glyphCounter), 0.7, 0, 0);
             System.out.print("Quality index: " + getQualityOfPosition(buffImage, text.charAt(glyphCounter), 0.7, 0, 0) + " ");
 
-            if (glyphCounter == 0) {
-                finalImage = photoGlyph; //Avoids the case that picture 0 gets stitched to a copy of picture 0
+            if (glyphCounter == 0) { //Special case for single letter images
+                finalImage = setBackgroundColor(photoGlyph, backgroundColor);
                 System.out.println();
             } else {
                 try {
@@ -215,32 +212,27 @@ public class ImageProcessor {
     public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor, int textLength) throws IOException {
 
         //Stitches images firstImage and secondImage together (which becomes the new firstImage for the next iteration)
+        System.out.println("- Stitching to previous image");
 
-        if (textLength == 1) { //Special case for single-letter collage
-            return converter.MatToBuffered(matImageList.get(0));
+        BufferedImage resultImage;
+
+        int newHeight;
+        if (secondImage.getHeight() > firstImage.getHeight()){
+            newHeight = secondImage.getHeight();
         } else {
-            System.out.println("- Stitching to previous image");
-
-            BufferedImage resultImage;
-
-            int newHeight;
-            if (secondImage.getHeight() > firstImage.getHeight()){
-                newHeight = secondImage.getHeight();
-            } else {
-                newHeight = firstImage.getHeight();
-            }
-
-            resultImage = new BufferedImage(firstImage.getWidth() +
-                    secondImage.getWidth(), newHeight,
-                    BufferedImage.TYPE_INT_ARGB);
-            Graphics g = resultImage.getGraphics();
-            g.drawImage(firstImage, 0, 0, null);
-            g.drawImage(secondImage, firstImage.getWidth(), newHeight - secondImage.getHeight(), null);
-
-            resultImage = setBackgroundColor(resultImage, backgroundColor);
-            return resultImage;
-
+            newHeight = firstImage.getHeight();
         }
+
+        resultImage = new BufferedImage(firstImage.getWidth() +
+                secondImage.getWidth(), newHeight,
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics g = resultImage.getGraphics();
+        g.drawImage(firstImage, 0, 0, null);
+        g.drawImage(secondImage, firstImage.getWidth(), newHeight - secondImage.getHeight(), null);
+
+        resultImage = setBackgroundColor(resultImage, backgroundColor);
+        return resultImage;
+
     }
 
     private BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
