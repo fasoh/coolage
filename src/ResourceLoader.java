@@ -21,7 +21,6 @@ public class ResourceLoader {
     Converter convert = new Converter();
 
     public ArrayList<Mat> getImages(String text, ArrayList<String> urlList){
-        System.out.print("Downloading picture - ");
         ArrayList<Mat> matImageList = new ArrayList<Mat>();
 
         if (text.length() > urlList.size()){
@@ -46,13 +45,13 @@ public class ResourceLoader {
     public ArrayList<Mat> downloadImagesFromList(ArrayList<Mat> matImageList, ArrayList<String> urlList){
         int outputCounter = 1;
         for (String url : urlList){
-            System.out.print(outputCounter + " ");
+            System.out.print("#" + outputCounter + " ");
             BufferedImage buffImage = this.getImage(url);
             Mat matImage = convert.BufferedToMat(buffImage);
             matImageList.add(matImage);
             outputCounter++;
         }
-        System.out.println("- Converted to Mat");
+        System.out.println("Converted to Mat");
         return matImageList;
     }
 
@@ -105,12 +104,14 @@ public class ResourceLoader {
 
         // Try finding local image – else download from source
         try {
-            image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/resources/" + fileName);
+            System.out.print("cached - ");
+            image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/cache/" + fileName);
         } catch (IOException e) {
 
             try {
+                System.out.print("downloaded - ");
                 image = this.imageFromURL(url);
-                ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/resources/" + fileName));
+                ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/cache/" + fileName));
             } catch (IOException f) {
                 f.printStackTrace();
             }
