@@ -59,6 +59,16 @@ public class Converter {
         return imageMat;
     }
 
+    public Mat BufferedToMat8UC1(BufferedImage buffImage) {
+        byte[] pixels = ((DataBufferByte) buffImage.getRaster().getDataBuffer()).getData();
+        // Create a Matrix the same size of image
+        Mat imageMat = new Mat(buffImage.getHeight(), buffImage.getWidth(), CvType.CV_8UC1);
+        // Fill Matrix with image values
+        imageMat.put(0, 0, pixels);
+
+        return imageMat;
+    }
+
     public BufferedImage MatToBuffered(Mat in) {
 
         System.out.print("Converting Mat to Image - ");

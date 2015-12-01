@@ -1,6 +1,5 @@
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Rect;
+import org.opencv.core.*;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 import javax.imageio.ImageIO;
@@ -72,6 +71,8 @@ public class LetterThread implements Callable<BufferedImage> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //tresholdTest(photoGlyph);
 
         return photoGlyph;
     }
@@ -168,6 +169,23 @@ public class LetterThread implements Callable<BufferedImage> {
         }
         return qualityPixels;
     }
+
+   /* public void tresholdTest(BufferedImage buffImage){
+
+        try{
+            buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
+            Mat source = converter.BufferedToMat(buffImage);
+            Mat destination = new Mat(source.rows(),source.cols(),source.type());
+            destination = source;
+
+            Imgproc.threshold(source, destination, 180, 255, Imgproc.THRESH_TOZERO);
+
+            ImageIO.write(converter.MatToBuffered(destination), "jpg", new File(System.getProperty("user.dir") + "/src/treshold.jpg"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
