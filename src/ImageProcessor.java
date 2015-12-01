@@ -44,19 +44,19 @@ public class ImageProcessor {
         boolean isFirstImage = true;
         Converter converter = new Converter();
 
-        //Für ThreadHandling mit Callable
+        //for threadHandling with Callable
         final ExecutorService service;
         List<Future<BufferedImage>> tasks = new ArrayList<Future<BufferedImage>>();
-        service = Executors.newFixedThreadPool(text.length()); //Anzahl der zu erstellenden Threads
+        service = Executors.newFixedThreadPool(text.length()); //Max amount of threads working at the same time
 
         for (BufferedImage rawImage : buffImageList){
 
             if (glyphCounter == 0){
                 //Start thread without glyphCounter
-                tasks.add(service.submit(new LetterThread(rawImage, text, font, backgroundColor, borderSize, borderColor, margin)));
+                tasks.add(service.submit(new LetterThread(rawImage, text, font, borderSize, borderColor, margin)));
             } else {
                 //Start thread with glyphCounter
-                tasks.add(service.submit(new LetterThread(rawImage, text, glyphCounter, font, backgroundColor, borderSize, borderColor, margin)));
+                tasks.add(service.submit(new LetterThread(rawImage, text, glyphCounter, font, borderSize, borderColor, margin)));
             }
 
             glyphCounter++;
@@ -141,7 +141,6 @@ class LetterThread implements Callable<BufferedImage> {
     private String text;
     private int glyphCounter = 0;
     private Font font;
-    private Color backgroundColor;
     private float borderSize;
     private Color borderColor;
     private int margin;
@@ -155,12 +154,11 @@ class LetterThread implements Callable<BufferedImage> {
     /**
      * Konstruktor für alle Bilder nach dem ersten (die zum vorherigen gestitched werden sollen)
      */
-    public LetterThread(BufferedImage rawImage, String text, int glyphCounter, Font font, Color backgroundColor, float borderSize, Color borderColor, int margin) {
+    public LetterThread(BufferedImage rawImage, String text, int glyphCounter, Font font, float borderSize, Color borderColor, int margin) {
         this.rawImage = rawImage;
         this.text = text;
         this.glyphCounter = glyphCounter;
         this.font = font;
-        this.backgroundColor = backgroundColor;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
         this.margin= margin;
@@ -169,11 +167,10 @@ class LetterThread implements Callable<BufferedImage> {
     /**
      * Konstruktor für das allererste Bild (welches nicht gestitched werden soll)
      */
-    public LetterThread(BufferedImage rawImage, String text, Font font, Color backgroundColor, float borderSize, Color borderColor, int margin) {
+    public LetterThread(BufferedImage rawImage, String text, Font font, float borderSize, Color borderColor, int margin) {
         this.rawImage = rawImage;
         this.text = text;
         this.font = font;
-        this.backgroundColor = backgroundColor;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
         this.margin = margin;
@@ -187,8 +184,6 @@ class LetterThread implements Callable<BufferedImage> {
         try {
             photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
             double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
-
-            setBackgroundColor(photoGlyph, backgroundColor);
 
             System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + glyphCounter + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
 
@@ -233,8 +228,6 @@ class LetterThread implements Callable<BufferedImage> {
             letterImage.draw(shape);
 
             letterImage.dispose();
-
-            textImage = setBackgroundColor(textImage, backgroundColor);
 
             textImage = cropImage(textImage, margin);
         } else {
@@ -303,22 +296,6 @@ class LetterThread implements Callable<BufferedImage> {
         amountOfFaces = faceDetections.toArray().length; //für system out
 
         return faceDetections.toArray();
-    }
-
-    public BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
-
-        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
-        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D graphics = backgroundLayer.createGraphics();
-        graphics.setPaint(backgroundColor);
-        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
-
-        Graphics g = newBuffImage.getGraphics();
-        g.drawImage(backgroundLayer, 0, 0, null);
-        g.drawImage(buffImage, 0, 0, null);
-
-        return newBuffImage;
     }
 
     /** Crops the parts of an image that have the same color as the top left pixel
