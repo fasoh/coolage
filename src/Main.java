@@ -3,6 +3,7 @@ import org.opencv.core.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
 
@@ -20,13 +21,14 @@ public class Main {
         urlList.add("http://lh4.ggpht.com/5X5I-rr9ZTPXp3r6twHgkhB2M3zobatltwrxr7HBwPSZpx_iFDieadQRlEKoXtPgy5pOlcRU0LAXSBhs=s620");
 
         String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-        String text = "pfsladfas";
+        String text = "multithreading";
 
         ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15);
-        BufferedImage collage = imageProcessor.processImages(resourceLoader.getImages(text, urlList), text);
-
-        Converter converter = new Converter();
-        converter.saveBuffImgAsPNG(collage);
+        try {
+            imageProcessor.processImages(resourceLoader.getImages(text, urlList), text);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Done!");
     }

@@ -9,7 +9,10 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.Buffer;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Created by Jannik on 27.10.15.
@@ -17,16 +20,16 @@ import java.util.ArrayList;
 
 public class ImageProcessor {
 
-    Converter converter = new Converter();
-    ResourceLoader loadResource = new ResourceLoader();
     private Font font;
     private Color backgroundColor;
     private float borderSize;
     private Color borderColor;
     private int margin;
+    private BufferedImage finalImage = null;
 
     public ImageProcessor(String fontFace, float fontSize, Color backgroundColor,  float borderSize, Color borderColor, int margin) {
 
+        ResourceLoader loadResource = new ResourceLoader();
         this.font = loadResource.getFont(fontFace, fontSize);
         this.backgroundColor = backgroundColor;
         this.borderSize = borderSize;
@@ -34,48 +37,166 @@ public class ImageProcessor {
         this.margin = margin;
     }
 
-    public BufferedImage processImages(ArrayList<Mat> matImageList, String text) {
+    public void processImages(ArrayList<BufferedImage> buffImageList, String text) throws ExecutionException {
 
         text = text.toUpperCase();
-        BufferedImage finalImage = null;
         int glyphCounter = 0;
+        boolean isFirstImage = true;
+        Converter converter = new Converter();
 
-        for (Mat rawImage : matImageList){
+        //Für ThreadHandling mit Callable
+        final ExecutorService service;
+        List<Future<BufferedImage>> tasks = new ArrayList<Future<BufferedImage>>();
+        service = Executors.newFixedThreadPool(text.length()); //Anzahl der zu erstellenden Threads
 
-            BufferedImage buffImage = converter.MatToBuffered(rawImage);
-            System.out.print("Applying text: '" + text.charAt(glyphCounter) + "' ");
+        for (BufferedImage rawImage : buffImageList){
 
-            BufferedImage photoGlyph = this.getPhotoGlyph(buffImage, text.charAt(glyphCounter), 0.7, 0, 0);
-            System.out.print("Quality index: " + getQualityOfPosition(buffImage, text.charAt(glyphCounter), 0.7, 0, 0) + " ");
-
-            if (glyphCounter == 0) { //Special case for single letter images
-                finalImage = setBackgroundColor(photoGlyph, backgroundColor);
-                System.out.println();
+            if (glyphCounter == 0){
+                //Start thread without glyphCounter
+                tasks.add(service.submit(new LetterThread(rawImage, text, font, backgroundColor, borderSize, borderColor, margin)));
             } else {
-                try {
-                    finalImage = stitchImages(finalImage, photoGlyph, backgroundColor);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                //Start thread with glyphCounter
+                tasks.add(service.submit(new LetterThread(rawImage, text, glyphCounter, font, backgroundColor, borderSize, borderColor, margin)));
             }
+
             glyphCounter++;
         }
 
-        return finalImage;
+        for (Future<BufferedImage> task : tasks){
+            try {
+                BufferedImage bufferedImage = task.get();
+
+                if (isFirstImage){
+                    bufferedImage = setBackgroundColor(bufferedImage, backgroundColor);
+                    saveImage(bufferedImage);
+                    isFirstImage = false;
+                    glyphCounter++;
+                } else {
+                    try {
+                        finalImage = stitchImages(finalImage, bufferedImage, backgroundColor);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (final InterruptedException ex) {
+                ex.printStackTrace();
+            } catch (final ExecutionException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        converter.saveBuffImgAsPNG(finalImage);
+
+        service.shutdownNow();
     }
 
-    public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
+    public void saveImage(BufferedImage bufferedImage){
+        this.finalImage = bufferedImage;
+    }
 
-        // Create a face detector from the cascade file in the resources directory.
-        CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
+    public BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
 
-        // Detect faces in the image. MatOfRect is a special container class for Rect.
-        System.out.print("Detecting faces: ");
-        MatOfRect faceDetections = new MatOfRect();
-        faceDetector.detectMultiScale(rawImage, faceDetections);
-        System.out.print(String.format("%s found - ", faceDetections.toArray().length));
+        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
+        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-        return faceDetections.toArray();
+        Graphics2D graphics = backgroundLayer.createGraphics();
+        graphics.setPaint(backgroundColor);
+        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
+
+        Graphics g = newBuffImage.getGraphics();
+        g.drawImage(backgroundLayer, 0, 0, null);
+        g.drawImage(buffImage, 0, 0, null);
+
+        return newBuffImage;
+    }
+
+    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor) throws IOException {
+        //Stitches images firstImage and secondImage together (which becomes the new firstImage for the next iteration)
+        BufferedImage resultImage;
+
+        int newHeight;
+        if (secondImage.getHeight() > firstImage.getHeight()) {
+            newHeight = secondImage.getHeight();
+        } else {
+            newHeight = firstImage.getHeight();
+        }
+
+        resultImage = new BufferedImage(firstImage.getWidth() +
+                secondImage.getWidth(), newHeight,
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics g = resultImage.getGraphics();
+        g.drawImage(firstImage, 0, 0, null);
+        g.drawImage(secondImage, firstImage.getWidth(), newHeight - secondImage.getHeight(), null);
+
+        resultImage = setBackgroundColor(resultImage, backgroundColor);
+        return resultImage;
+
+    }
+
+}
+
+class LetterThread implements Callable<BufferedImage> {
+
+    private BufferedImage rawImage;
+    private String text;
+    private int glyphCounter = 0;
+    private Font font;
+    private Color backgroundColor;
+    private float borderSize;
+    private Color borderColor;
+    private int margin;
+    BufferedImage photoGlyph;
+    CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
+    Converter converter = new Converter();
+
+    //Für system outs
+    private int amountOfFaces;
+
+    /**
+     * Konstruktor für alle Bilder nach dem ersten (die zum vorherigen gestitched werden sollen)
+     */
+    public LetterThread(BufferedImage rawImage, String text, int glyphCounter, Font font, Color backgroundColor, float borderSize, Color borderColor, int margin) {
+        this.rawImage = rawImage;
+        this.text = text;
+        this.glyphCounter = glyphCounter;
+        this.font = font;
+        this.backgroundColor = backgroundColor;
+        this.borderSize = borderSize;
+        this.borderColor = borderColor;
+        this.margin= margin;
+    }
+
+    /**
+     * Konstruktor für das allererste Bild (welches nicht gestitched werden soll)
+     */
+    public LetterThread(BufferedImage rawImage, String text, Font font, Color backgroundColor, float borderSize, Color borderColor, int margin) {
+        this.rawImage = rawImage;
+        this.text = text;
+        this.font = font;
+        this.backgroundColor = backgroundColor;
+        this.borderSize = borderSize;
+        this.borderColor = borderColor;
+        this.margin = margin;
+    }
+
+    /**
+     * Methode, die für jeden Thread vom Callable aufgerufen wird (analog zu run() bei Threads)
+     */
+    public BufferedImage call() {
+
+        try {
+            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
+            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
+
+            setBackgroundColor(photoGlyph, backgroundColor);
+
+            System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + glyphCounter + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return photoGlyph;
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
@@ -118,7 +239,6 @@ public class ImageProcessor {
             textImage = cropImage(textImage, margin);
         } else {
             textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
-            System.out.print("  ");
         }
 
         return textImage;
@@ -158,27 +278,54 @@ public class ImageProcessor {
      * @param qualityAreas Quality Image
      * @return number of black pixels
      */
-
     private int countQualityPixels (BufferedImage qualityAreas) {
 
         int photoWidth = qualityAreas.getWidth();
         int photoHeight = qualityAreas.getHeight();
-        int qualitypixels = 0;
+        int qualityPixels = 0;
 
         for (int x = 0; x < photoWidth; x++) {
             for (int y = 0; y < photoHeight; y++) {
                 if (qualityAreas.getRGB(x, y) == 0xFFFF0000) {
-                    qualitypixels++;
+                    qualityPixels++;
                 }
             }
         }
-        return qualitypixels;
+        return qualityPixels;
     }
 
+    public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
+
+        // Detect faces in the image. MatOfRect is a special container class for Rect.
+        MatOfRect faceDetections = new MatOfRect();
+        faceDetector.detectMultiScale(rawImage, faceDetections);
+
+        amountOfFaces = faceDetections.toArray().length; //für system out
+
+        return faceDetections.toArray();
+    }
+
+    public BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
+
+        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
+        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D graphics = backgroundLayer.createGraphics();
+        graphics.setPaint(backgroundColor);
+        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
+
+        Graphics g = newBuffImage.getGraphics();
+        g.drawImage(backgroundLayer, 0, 0, null);
+        g.drawImage(buffImage, 0, 0, null);
+
+        return newBuffImage;
+    }
+
+    /** Crops the parts of an image that have the same color as the top left pixel
+     * The algorithm checks the image pixel by pixel. It stops when the current pixel does NOT equal the top left pixel
+     * Therefore it draws a rectangle over the letter
+     * */
     public BufferedImage cropImage(BufferedImage source, int margin) {
-        // Crops the parts of an image that have the same color as the top left pixel
-        // The algorithm checks the image pixel by pixel. It stops when the current pixel does NOT equal the top left pixel
-        // Therefore it draws a rectangle over the letter
 
         int width = source.getWidth();
         int height = source.getHeight();
@@ -208,46 +355,4 @@ public class ImageProcessor {
         return croppedImage;
     }
 
-
-    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor) throws IOException {
-
-        //Stitches images firstImage and secondImage together (which becomes the new firstImage for the next iteration)
-        System.out.println("- Stitching to previous image");
-
-        BufferedImage resultImage;
-
-        int newHeight;
-        if (secondImage.getHeight() > firstImage.getHeight()){
-            newHeight = secondImage.getHeight();
-        } else {
-            newHeight = firstImage.getHeight();
-        }
-
-        resultImage = new BufferedImage(firstImage.getWidth() +
-                secondImage.getWidth(), newHeight,
-                BufferedImage.TYPE_INT_ARGB);
-        Graphics g = resultImage.getGraphics();
-        g.drawImage(firstImage, 0, 0, null);
-        g.drawImage(secondImage, firstImage.getWidth(), newHeight - secondImage.getHeight(), null);
-
-        resultImage = setBackgroundColor(resultImage, backgroundColor);
-        return resultImage;
-
-    }
-
-    private BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
-
-        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
-        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D graphics = backgroundLayer.createGraphics();
-        graphics.setPaint(backgroundColor);
-        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
-
-        Graphics g = newBuffImage.getGraphics();
-        g.drawImage(backgroundLayer, 0, 0, null);
-        g.drawImage(buffImage, 0, 0, null);
-
-        return newBuffImage;
-    }
 }

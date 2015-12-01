@@ -20,15 +20,15 @@ public class ResourceLoader {
 
     Converter convert = new Converter();
 
-    public ArrayList<Mat> getImages(String text, ArrayList<String> urlList){
-        ArrayList<Mat> matImageList = new ArrayList<Mat>();
+    public ArrayList<BufferedImage> getImages(String text, ArrayList<String> urlList){
+        ArrayList<BufferedImage> buffImageList = new ArrayList<BufferedImage>();
 
         if (text.length() > urlList.size()){
             System.out.println("Filling up imageList (text > imageList.size())");
-            downloadImagesFromList(matImageList, urlList);
+            downloadImagesFromListAsBuffered(buffImageList, urlList);
             int j = 0;
             for (int i = urlList.size(); i < text.length(); i++){
-                matImageList.add(matImageList.get(j));
+                buffImageList.add(buffImageList.get(j));
                 j++;
             }
         } else { //Trims rawImageList to size of text if there are more images than text
@@ -36,13 +36,13 @@ public class ResourceLoader {
             for (int i = urlList.size(); i > text.length(); i--){
                 urlList.remove(urlList.size() - 1);
             }
-            downloadImagesFromList(matImageList, urlList);
+            downloadImagesFromListAsBuffered(buffImageList, urlList);
         }
 
-        return matImageList;
+        return buffImageList;
     }
 
-    public ArrayList<Mat> downloadImagesFromList(ArrayList<Mat> matImageList, ArrayList<String> urlList){
+    public ArrayList<Mat> downloadImagesFromListAsMat(ArrayList<Mat> matImageList, ArrayList<String> urlList){
         int outputCounter = 1;
         for (String url : urlList){
             System.out.print("#" + outputCounter + " ");
@@ -53,6 +53,19 @@ public class ResourceLoader {
         }
         System.out.println("Converted to Mat");
         return matImageList;
+    }
+
+    public ArrayList<BufferedImage> downloadImagesFromListAsBuffered(ArrayList<BufferedImage> buffImageList, ArrayList<String> urlList){
+        int outputCounter = 1;
+        System.out.print("Picture ");
+        for (String url : urlList){
+            System.out.print("#" + outputCounter + " ");
+            BufferedImage buffImage = this.getImage(url);
+            buffImageList.add(buffImage);
+            outputCounter++;
+        }
+        System.out.println();
+        return buffImageList;
     }
 
     public Font customFontFromFile(String fontName, float fontSize) throws FileNotFoundException {
