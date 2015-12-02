@@ -219,7 +219,7 @@ public class LetterThread implements Callable<BufferedImage> {
         int bottomY = -1, bottomX = -1;
         for(int y = 0; y < height; y++) {
             for(int x = 0; x < width; x++) {
-                if (source.getRGB(x, y) != source.getRGB(0,0)) { //top left pixel (0,0) used as comparator
+                if (source.getRGB(x, y) != 0) {
                     if (x < topX) topX = x;
                     if (y < topY) topY = y;
                     if (x > bottomX) bottomX = x;
