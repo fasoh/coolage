@@ -63,6 +63,7 @@ public class LetterThread implements Callable<BufferedImage> {
     public BufferedImage call() {
 
         try {
+            tresholdTest(rawImage);
             photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
             double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
 
@@ -71,8 +72,6 @@ public class LetterThread implements Callable<BufferedImage> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //tresholdTest(photoGlyph);
 
         return photoGlyph;
     }
@@ -140,7 +139,7 @@ public class LetterThread implements Callable<BufferedImage> {
 
             // Save image for visualisation
             try {
-                ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/src/quality.jpg"));
+                ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -170,22 +169,46 @@ public class LetterThread implements Callable<BufferedImage> {
         return qualityPixels;
     }
 
-   /* public void tresholdTest(BufferedImage buffImage){
+   public void tresholdTest(BufferedImage buffImage){
 
         try{
             buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
-            Mat source = converter.BufferedToMat(buffImage);
-            Mat destination = new Mat(source.rows(),source.cols(),source.type());
-            destination = source;
+            Mat sourceMat = converter.BufferedToMat(buffImage);
+            Mat destinationMat = new Mat(sourceMat.rows(),sourceMat.cols(),sourceMat.type());
+            destinationMat = sourceMat;
 
-            Imgproc.threshold(source, destination, 180, 255, Imgproc.THRESH_TOZERO);
+            Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_RGB2GRAY);
 
-            ImageIO.write(converter.MatToBuffered(destination), "jpg", new File(System.getProperty("user.dir") + "/src/treshold.jpg"));
+            Imgproc.threshold(sourceMat, destinationMat, 180, 255, Imgproc.THRESH_BINARY);
+            //Imgproc.adaptiveThreshold(sourceMat, destinationMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 40);
+
+            Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
+
+            BufferedImage treshTest = converter.MatToBuffered(destinationMat);
+
+            //treshTest = this.getPhotoGlyph(treshTest, text.charAt(glyphCounter), 0.7, 0, 0);
+
+            ImageIO.write(treshTest, "jpg", new File(System.getProperty("user.dir") + "/treshold.jpg"));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }*/
+    }
+
+    public void swapColor(BufferedImage source, Color oldColor, Color newColor){
+        int width = source.getWidth();
+        int height = source.getHeight();
+
+        int topY = Integer.MAX_VALUE, topX = Integer.MAX_VALUE;
+        int bottomY = -1, bottomX = -1;
+        for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
+                if (source.getRGB(x, y) != source.getRGB(0,0)) {
+
+                }
+            }
+        }
+    }
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
