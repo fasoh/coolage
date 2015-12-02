@@ -32,8 +32,6 @@ public class Converter {
             return original;
         }
 
-        System.out.print("Converting to BGR - ");
-
         // Create a buffered image
         BufferedImage image = new BufferedImage(original.getWidth(), original.getHeight(), type);
 

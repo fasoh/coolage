@@ -28,6 +28,7 @@ public class LetterThread implements Callable<BufferedImage> {
     BufferedImage photoGlyph;
     CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
     Converter converter = new Converter();
+    public static Object syncObject = new Object();
 
     //Für system outs
     private int amountOfFaces;
@@ -64,8 +65,27 @@ public class LetterThread implements Callable<BufferedImage> {
 
         try {
             tresholdTest(rawImage);
-            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
-            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 0.7, 0, 0);
+
+            int bestX = 0;
+            int bestY = 0;
+            double bestQuality = 0;
+            int accuracy = 50;
+
+            for (int x = 1; x < rawImage.getWidth(); x += accuracy){
+                for (int y = 1; y < rawImage.getHeight(); y += accuracy){
+                    double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
+                    if (newQuality > bestQuality){
+                        bestQuality = newQuality;
+                        bestX = x;
+                        bestY = y;
+                    }
+                }
+            }
+
+            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 1, bestX, bestY);
+            photoGlyph = cropImage(photoGlyph, margin);
+
+            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, 0, 0);
 
             System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + glyphCounter + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
 
@@ -84,6 +104,7 @@ public class LetterThread implements Callable<BufferedImage> {
         }
 
         if (letter != ' '){
+
             int scaleX = (int)(buffImage.getWidth() * imageScale);
             int scaleY = (int)(buffImage.getHeight() * imageScale);
 
@@ -111,7 +132,6 @@ public class LetterThread implements Callable<BufferedImage> {
 
             letterImage.dispose();
 
-            textImage = cropImage(textImage, margin);
         } else {
             textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
         }
@@ -122,7 +142,7 @@ public class LetterThread implements Callable<BufferedImage> {
     private double getQualityOfPosition(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
 
         BufferedImage qualityAreas = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Rect[] faces = this.detectFaces(converter.BufferedToMat(buffImage));
+        Rect[] faces = this.detectFaces(converter.BufferedToMat(converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR)));
 
         Graphics2D canvas = qualityAreas.createGraphics();
         canvas.setColor(Color.RED);
@@ -138,11 +158,11 @@ public class LetterThread implements Callable<BufferedImage> {
             BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
 
             // Save image for visualisation
-            try {
+            /*try {
                 ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             return ((double)this.countQualityPixels(croppedQualityAres) / (double)this.countQualityPixels(qualityAreas));
         }
@@ -197,13 +217,15 @@ public class LetterThread implements Callable<BufferedImage> {
 
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
-        // Detect faces in the image. MatOfRect is a special container class for Rect.
-        MatOfRect faceDetections = new MatOfRect();
-        faceDetector.detectMultiScale(rawImage, faceDetections);
+        synchronized (syncObject) {
+            // Detect faces in the image. MatOfRect is a special container class for Rect.
+            MatOfRect faceDetections = new MatOfRect();
+            faceDetector.detectMultiScale(rawImage, faceDetections);
 
-        amountOfFaces = faceDetections.toArray().length; //für system out
+            amountOfFaces = faceDetections.toArray().length; //für system out
 
-        return faceDetections.toArray();
+            return faceDetections.toArray();
+        }
     }
 
     /** Crops the parts of an image that have the same color as the top left pixel
