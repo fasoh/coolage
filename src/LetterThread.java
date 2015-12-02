@@ -195,21 +195,6 @@ public class LetterThread implements Callable<BufferedImage> {
         }
     }
 
-    public void swapColor(BufferedImage source, Color oldColor, Color newColor){
-        int width = source.getWidth();
-        int height = source.getHeight();
-
-        int topY = Integer.MAX_VALUE, topX = Integer.MAX_VALUE;
-        int bottomY = -1, bottomX = -1;
-        for(int y = 0; y < height; y++) {
-            for(int x = 0; x < width; x++) {
-                if (source.getRGB(x, y) != source.getRGB(0,0)) {
-
-                }
-            }
-        }
-    }
-
     public Rect[] detectFaces(Mat rawImage) { // Detects faces in an image, draws boxes around them, and writes the results to "faceDetection.png".
 
         // Detect faces in the image. MatOfRect is a special container class for Rect.
