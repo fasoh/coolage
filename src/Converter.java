@@ -69,8 +69,6 @@ public class Converter {
 
     public BufferedImage MatToBuffered(Mat in) {
 
-        System.out.print("Converting Mat to Image - ");
-
         byte[] data = new byte[in.rows() * in.cols() * (int) (in.elemSize())];
         in.get(0, 0, data);
         if (in.channels() == 3) {

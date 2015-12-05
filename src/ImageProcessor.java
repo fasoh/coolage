@@ -37,7 +37,7 @@ public class ImageProcessor {
         //for threadHandling with Callable
         final ExecutorService service;
         List<Future<BufferedImage>> tasks = new ArrayList<Future<BufferedImage>>();
-        service = Executors.newFixedThreadPool(1); //Max amount of threads working at the same time
+        service = Executors.newFixedThreadPool(text.length()); //Max amount of threads working at the same time
 
         for (BufferedImage rawImage : buffImageList){
 
