@@ -91,8 +91,8 @@ public class LetterThread implements Callable<BufferedImage> {
         int stepsX = rawImage.getWidth()/accuracyTiles;
         int stepsY = rawImage.getHeight()/accuracyTiles;
 
-        for (int x = stepsX; x < rawImage.getWidth(); x += stepsX){
-            for (int y = stepsY; y < rawImage.getHeight(); y += stepsY){
+        for (int x = 0; x < rawImage.getWidth(); x += stepsX){
+            for (int y = 0; y < rawImage.getHeight(); y += stepsY){
                 double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
                 if (newQuality != 0 && newQuality > bestQuality){
                     bestQuality = newQuality;
