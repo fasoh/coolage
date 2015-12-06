@@ -29,6 +29,8 @@ public class ImageProcessor {
 
     public void processImages(ArrayList<BufferedImage> buffImageList, String text) throws ExecutionException {
 
+        System.out.println("Creating collage...");
+
         text = text.toUpperCase();
         int glyphCounter = 0;
         boolean isFirstImage = true;
@@ -40,7 +42,6 @@ public class ImageProcessor {
         service = Executors.newFixedThreadPool(text.length()); //Max amount of threads working at the same time
 
         for (BufferedImage rawImage : buffImageList){
-
             if (glyphCounter == 0){
                 //Start thread without glyphCounter
                 tasks.add(service.submit(new LetterThread(rawImage, text, font, borderSize, borderColor, margin)));

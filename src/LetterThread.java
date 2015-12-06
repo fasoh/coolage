@@ -5,11 +5,16 @@ import org.opencv.objdetect.CascadeClassifier;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import org.opencv.core.Point;
+import org.opencv.core.Core;
+
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.Random;
 import java.util.concurrent.Callable;
 
 /**
@@ -74,7 +79,7 @@ public class LetterThread implements Callable<BufferedImage> {
 
             double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
 
-            System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + glyphCounter + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+            System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter+1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,6 +158,7 @@ public class LetterThread implements Callable<BufferedImage> {
     private double getQualityOfPosition(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
         synchronized (syncObject) {
             BufferedImage qualityAreas = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Mat tempMat = new Mat(buffImage.getHeight(), buffImage.getWidth(), CvType.CV_8UC3);
             Rect[] faces = this.detectFaces(converter.BufferedToMat(converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR)));
 
             Graphics2D canvas = qualityAreas.createGraphics();
@@ -162,18 +168,24 @@ public class LetterThread implements Callable<BufferedImage> {
                 return 0;
             } else {
                 for (Rect face : faces) {
-                    canvas.fill(new Rectangle(face.x, face.y, face.width, face.height));
+                    //canvas.fill(new Rectangle(face.x, face.y, face.width, face.height));
+                    Point center= new Point(face.x + face.width*0.5, face.y + face.height*0.5 );
+                    Imgproc.ellipse(tempMat, center, new Size(face.width * 0.5, face.height * 0.5), 0, 0, 360, new Scalar(0, 0, 255), -1);
+                    //ellipse(Mat img, Point center, Size axes, double angle, double startAngle, double endAngle, Scalar color, int thickness)
                 }
+
+                qualityAreas = converter.MatToBuffered(tempMat);
+
                 canvas.dispose();
 
                 BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
 
                 // Save image for visualisation
-            /*try {
-                ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
+                try {
+                    ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 return ((double) this.countQualityPixels(croppedQualityAres) / (double) this.countQualityPixels(qualityAreas));
             }
