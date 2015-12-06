@@ -65,12 +65,14 @@ public class LetterThread implements Callable<BufferedImage> {
         try {
             //tresholdTest(rawImage);
 
-            int[] bestCoordinates = getBestCoordinates(50);
+            double scale = 1;
+            int accuracy = 50;
+            int[] bestCoordinates = getBestCoordinates(accuracy);
 
-            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 1, bestCoordinates[0], bestCoordinates[1]);
+            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
             photoGlyph = cropImage(photoGlyph, margin);
 
-            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, bestCoordinates[0], bestCoordinates[1]);
+            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
 
             System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + glyphCounter + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
 
