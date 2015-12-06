@@ -65,26 +65,12 @@ public class LetterThread implements Callable<BufferedImage> {
         try {
             //tresholdTest(rawImage);
 
-            int bestX = 0;
-            int bestY = 0;
-            double bestQuality = 0;
-            int accuracy = 50;
+            int[] bestCoordinates = getBestCoordinates(50);
 
-            for (int x = 1; x < rawImage.getWidth(); x += accuracy){
-                for (int y = 1; y < rawImage.getHeight(); y += accuracy){
-                    double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
-                    if (newQuality != 0 && newQuality > bestQuality){
-                        bestQuality = newQuality;
-                        bestX = x;
-                        bestY = y;
-                    }
-                }
-            }
-
-            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 1, bestX, bestY);
+            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), 1, bestCoordinates[0], bestCoordinates[1]);
             photoGlyph = cropImage(photoGlyph, margin);
 
-            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, bestX, bestY);
+            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, bestCoordinates[0], bestCoordinates[1]);
 
             System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + glyphCounter + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
 
@@ -93,6 +79,26 @@ public class LetterThread implements Callable<BufferedImage> {
         }
 
         return photoGlyph;
+    }
+
+    public int[] getBestCoordinates(int accuracy){
+        double bestQuality = 0;
+        int bestX = 0;
+        int bestY = 0;
+
+        for (int x = 1; x < rawImage.getWidth(); x += accuracy){
+            for (int y = 1; y < rawImage.getHeight(); y += accuracy){
+                double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
+                if (newQuality != 0 && newQuality > bestQuality){
+                    bestQuality = newQuality;
+                    bestX = x;
+                    bestY = y;
+                }
+            }
+        }
+
+        int[] bestCoordinates = new int[] {bestX, bestY};
+        return bestCoordinates;
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
@@ -191,7 +197,7 @@ public class LetterThread implements Callable<BufferedImage> {
         }
     }
 
-   public void tresholdTest(BufferedImage buffImage){
+    public void tresholdTest(BufferedImage buffImage){
         synchronized (syncObject) {
             try {
                 buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);

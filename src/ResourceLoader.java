@@ -117,14 +117,14 @@ public class ResourceLoader {
 
         // Try finding local image – else download from source
         try {
-            System.out.print("cached - ");
             image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/cache/" + fileName);
+            System.out.print("cached - ");
         } catch (IOException e) {
 
             try {
-                System.out.print("downloaded - ");
                 image = this.imageFromURL(url);
                 ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/cache/" + fileName));
+                System.out.print("downloaded - ");
             } catch (IOException f) {
                 f.printStackTrace();
             }
