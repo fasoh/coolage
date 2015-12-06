@@ -5,16 +5,13 @@ import org.opencv.objdetect.CascadeClassifier;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import org.opencv.core.Point;
-import org.opencv.core.Core;
 
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.Callable;
 
 /**
@@ -72,14 +69,18 @@ public class LetterThread implements Callable<BufferedImage> {
 
             double scale = 1;
             int accuracyTiles = 10;
-            int[] bestCoordinates = getBestCoordinates(accuracyTiles);
+            double quality = 0;
 
-            photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-            photoGlyph = cropImage(photoGlyph, margin);
-
-            double quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-
-            System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter+1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+            if (text.charAt(glyphCounter) != ' ') {
+                int[] bestCoordinates = getBestCoordinates(accuracyTiles);
+                photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                photoGlyph = cropImage(photoGlyph, margin);
+                quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter+1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+            } else {
+                photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
+                System.out.println("Empty space at position " + (glyphCounter+1));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -118,38 +119,32 @@ public class LetterThread implements Callable<BufferedImage> {
                 letter = letter.toString().toLowerCase().charAt(0);
             }
 
-            if (letter != ' ') {
+            int scaleX = (int) (buffImage.getWidth() * imageScale);
+            int scaleY = (int) (buffImage.getHeight() * imageScale);
 
-                int scaleX = (int) (buffImage.getWidth() * imageScale);
-                int scaleY = (int) (buffImage.getHeight() * imageScale);
+            textImage = new BufferedImage(scaleX, scaleY, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D letterImage = textImage.createGraphics();
+            FontRenderContext frc = letterImage.getFontRenderContext();
 
-                textImage = new BufferedImage(scaleX, scaleY, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D letterImage = textImage.createGraphics();
-                FontRenderContext frc = letterImage.getFontRenderContext();
+            GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
+            Rectangle2D glyphBox = glyphVector.getVisualBounds();
+            int xOff = (int) glyphBox.getX();
+            int yOff = (int) -glyphBox.getY();
+            Shape shape = glyphVector.getOutline(xOff + offsetX, yOff + offsetY);
 
-                GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
-                Rectangle2D glyphBox = glyphVector.getVisualBounds();
-                int xOff = (int) glyphBox.getX();
-                int yOff = (int) -glyphBox.getY();
-                Shape shape = glyphVector.getOutline(xOff + offsetX, yOff + offsetY);
+            letterImage.setClip(shape); // Deactivate to see letter position in image
 
-                letterImage.setClip(shape); // Deactivate to see letter position in image
+            Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
 
-                Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
+            letterImage.drawImage(scaledImage, 0, 0, null);
+            letterImage.setClip(null);
 
-                letterImage.drawImage(scaledImage, 0, 0, null);
-                letterImage.setClip(null);
+            letterImage.setStroke(new BasicStroke(borderSize));
+            letterImage.setColor(borderColor);
+            letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            letterImage.draw(shape);
 
-                letterImage.setStroke(new BasicStroke(borderSize));
-                letterImage.setColor(borderColor);
-                letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                letterImage.draw(shape);
-
-                letterImage.dispose();
-
-            } else {
-                textImage = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
-            }
+            letterImage.dispose();
 
             return textImage;
         }
@@ -181,11 +176,11 @@ public class LetterThread implements Callable<BufferedImage> {
                 BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
 
                 // Save image for visualisation
-                /*try {
+                try {
                     ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
-                }*/
+                }
 
                 return ((double) this.countQualityPixels(croppedQualityAres) / (double) this.countQualityPixels(qualityAreas));
             }

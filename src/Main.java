@@ -1,7 +1,6 @@
 import org.opencv.core.*;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -22,7 +21,7 @@ public class Main {
         urlList.add("http://blogs.reuters.com/great-debate/files/2013/07/obama-best.jpg");
         urlList.add("http://budgeting.thenest.com/DM-Resize/photos.demandstudios.com/getty/article/41/34/89792372.jpg?w=600&h=600&keep_ratio=1");
         String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-        String text = "abcdef";
+        String text = "a b c";
 
         ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15);
         try {
