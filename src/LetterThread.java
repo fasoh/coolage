@@ -66,8 +66,8 @@ public class LetterThread implements Callable<BufferedImage> {
             //tresholdTest(rawImage);
 
             double scale = 1;
-            int accuracy = 50;
-            int[] bestCoordinates = getBestCoordinates(accuracy);
+            int accuracyTiles = 10;
+            int[] bestCoordinates = getBestCoordinates(accuracyTiles);
 
             photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
             photoGlyph = cropImage(photoGlyph, margin);
@@ -83,13 +83,16 @@ public class LetterThread implements Callable<BufferedImage> {
         return photoGlyph;
     }
 
-    public int[] getBestCoordinates(int accuracy){
+    public int[] getBestCoordinates(int accuracyTiles){
         double bestQuality = 0;
         int bestX = 0;
         int bestY = 0;
 
-        for (int x = 1; x < rawImage.getWidth(); x += accuracy){
-            for (int y = 1; y < rawImage.getHeight(); y += accuracy){
+        int stepsX = rawImage.getWidth()/accuracyTiles;
+        int stepsY = rawImage.getHeight()/accuracyTiles;
+
+        for (int x = stepsX; x < rawImage.getWidth(); x += stepsX){
+            for (int y = stepsY; y < rawImage.getHeight(); y += stepsY){
                 double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
                 if (newQuality != 0 && newQuality > bestQuality){
                     bestQuality = newQuality;
