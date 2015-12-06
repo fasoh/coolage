@@ -176,11 +176,11 @@ public class LetterThread implements Callable<BufferedImage> {
                 BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
 
                 // Save image for visualisation
-                try {
+                /*try {
                     ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
 
                 return ((double) this.countQualityPixels(croppedQualityAres) / (double) this.countQualityPixels(qualityAreas));
             }
