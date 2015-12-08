@@ -65,18 +65,28 @@ public class LetterThread implements Callable<BufferedImage> {
     public BufferedImage call() {
 
         try {
-            //tresholdTest(rawImage);
 
             double scale = 1;
             int accuracyTiles = 10;
             double quality = 0;
 
             if (text.charAt(glyphCounter) != ' ') {
-                int[] bestCoordinates = getBestCoordinates(accuracyTiles);
-                photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                photoGlyph = cropImage(photoGlyph, margin);
-                quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter+1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+
+                Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
+
+                if (detectFaces(tempMat) != null) {
+                    int[] bestCoordinates = getBestCoordinates(accuracyTiles);
+                    photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                    photoGlyph = cropImage(photoGlyph, margin);
+                    quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                    System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+                } else {
+                    //TODO getBestCoordinates(accuracyTiles) mit Intensität oder treshold ausführen und für getPhotoGlyph übergeben
+                    photoGlyph = this.getPhotoGlyph(tresholdTest(rawImage), text.charAt(glyphCounter), scale, 0, 0);
+                    photoGlyph = cropImage(photoGlyph, margin);
+                    System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s, the treshold quality is [not yet implemented].");
+                }
+
             } else {
                 photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
                 System.out.println("Empty space at position " + (glyphCounter+1));
@@ -209,8 +219,9 @@ public class LetterThread implements Callable<BufferedImage> {
         }
     }
 
-    public void tresholdTest(BufferedImage buffImage){
+    public BufferedImage tresholdTest(BufferedImage buffImage){
         synchronized (syncObject) {
+            BufferedImage tresholdTest = null;
             try {
                 buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
                 Mat sourceMat = converter.BufferedToMat(buffImage);
@@ -224,15 +235,16 @@ public class LetterThread implements Callable<BufferedImage> {
 
                 Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
 
-                BufferedImage treshTest = converter.MatToBuffered(destinationMat);
+                tresholdTest = converter.MatToBuffered(destinationMat);
 
                 //treshTest = this.getPhotoGlyph(treshTest, text.charAt(glyphCounter), 0.7, 0, 0);
 
-                ImageIO.write(treshTest, "jpg", new File(System.getProperty("user.dir") + "/treshold.jpg"));
+                ImageIO.write(tresholdTest, "jpg", new File(System.getProperty("user.dir") + "/treshold.jpg"));
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            return tresholdTest;
         }
     }
 
@@ -245,7 +257,11 @@ public class LetterThread implements Callable<BufferedImage> {
 
             amountOfFaces = faceDetections.toArray().length; //für system out
 
-            return faceDetections.toArray();
+            if (amountOfFaces != 0) {
+                return faceDetections.toArray();
+            } else {
+                return null;
+            }
         }
     }
 
