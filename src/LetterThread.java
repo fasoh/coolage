@@ -63,63 +63,65 @@ public class LetterThread implements Callable<BufferedImage> {
      * Methode, die für jeden Thread vom Callable aufgerufen wird (analog zu run() bei Threads)
      */
     public BufferedImage call() {
+        synchronized (syncObject) {
+            try {
+                double scale = 1;
+                int accuracyTiles = 10;
+                double quality = 0;
 
-        try {
+                if (text.charAt(glyphCounter) != ' ') {
 
-            double scale = 1;
-            int accuracyTiles = 10;
-            double quality = 0;
+                    Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
 
-            if (text.charAt(glyphCounter) != ' ') {
+                    if (detectFaces(tempMat) != null) {
+                        int[] bestCoordinates = getBestCoordinates(accuracyTiles);
+                        photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                        photoGlyph = cropImage(photoGlyph, margin);
+                        quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                        System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+                    } else {
+                        //TODO getBestCoordinates(accuracyTiles) mit Intensität oder treshold ausführen und für getPhotoGlyph übergeben
+                        photoGlyph = this.getPhotoGlyph(tresholdTest(rawImage), text.charAt(glyphCounter), scale, 0, 0);
+                        photoGlyph = cropImage(photoGlyph, margin);
+                        System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s, the treshold quality is [not yet implemented].");
+                    }
 
-                Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
-
-                if (detectFaces(tempMat) != null) {
-                    int[] bestCoordinates = getBestCoordinates(accuracyTiles);
-                    photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                    photoGlyph = cropImage(photoGlyph, margin);
-                    quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                    System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
                 } else {
-                    //TODO getBestCoordinates(accuracyTiles) mit Intensität oder treshold ausführen und für getPhotoGlyph übergeben
-                    photoGlyph = this.getPhotoGlyph(tresholdTest(rawImage), text.charAt(glyphCounter), scale, 0, 0);
-                    photoGlyph = cropImage(photoGlyph, margin);
-                    System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s, the treshold quality is [not yet implemented].");
+                    photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
+                    System.out.println("Empty space at position " + (glyphCounter + 1));
                 }
 
-            } else {
-                photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
-                System.out.println("Empty space at position " + (glyphCounter+1));
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            return photoGlyph;
         }
-
-        return photoGlyph;
     }
 
     public int[] getBestCoordinates(int accuracyTiles){
-        double bestQuality = 0;
-        int bestX = 0;
-        int bestY = 0;
+        synchronized (syncObject) {
+            double bestQuality = 0;
+            int bestX = 0;
+            int bestY = 0;
 
-        int stepsX = rawImage.getWidth()/accuracyTiles;
-        int stepsY = rawImage.getHeight()/accuracyTiles;
+            int stepsX = rawImage.getWidth() / accuracyTiles;
+            int stepsY = rawImage.getHeight() / accuracyTiles;
 
-        for (int x = 0; x < rawImage.getWidth(); x += stepsX){
-            for (int y = 0; y < rawImage.getHeight(); y += stepsY){
-                double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
-                if (newQuality != 0 && newQuality > bestQuality){
-                    bestQuality = newQuality;
-                    bestX = x;
-                    bestY = y;
+            for (int x = 0; x < rawImage.getWidth(); x += stepsX) {
+                for (int y = 0; y < rawImage.getHeight(); y += stepsY) {
+                    double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
+                    if (newQuality != 0 && newQuality > bestQuality) {
+                        bestQuality = newQuality;
+                        bestX = x;
+                        bestY = y;
+                    }
                 }
             }
-        }
 
-        int[] bestCoordinates = new int[] {bestX, bestY};
-        return bestCoordinates;
+            int[] bestCoordinates = new int[]{bestX, bestY};
+            return bestCoordinates;
+        }
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
@@ -236,8 +238,6 @@ public class LetterThread implements Callable<BufferedImage> {
                 Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
 
                 tresholdTest = converter.MatToBuffered(destinationMat);
-
-                //treshTest = this.getPhotoGlyph(treshTest, text.charAt(glyphCounter), 0.7, 0, 0);
 
                 ImageIO.write(tresholdTest, "jpg", new File(System.getProperty("user.dir") + "/treshold.jpg"));
 
