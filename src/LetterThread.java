@@ -67,7 +67,7 @@ public class LetterThread implements Callable<BufferedImage> {
             try {
                 double scale = 1;
                 int accuracyTiles = 10;
-                double quality = 0;
+                double quality;
 
                 if (text.charAt(glyphCounter) != ' ') {
 
@@ -123,8 +123,7 @@ public class LetterThread implements Callable<BufferedImage> {
                 }
             }
 
-            int[] bestCoordinates = new int[]{bestX, bestY};
-            return bestCoordinates;
+            return new int[]{bestX, bestY};
         }
     }
 
