@@ -21,7 +21,7 @@ public class Main {
         urlList.add("http://blogs.reuters.com/great-debate/files/2013/07/obama-best.jpg");
         urlList.add("http://stockfresh.com/files/g/goce/m/98/5167439_stock-photo-green-barley-field-nature-background.jpg");
         String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-        String text = "testtesttest";
+        String text = "tes";
         //TODO Für leerzeichen muss das bild nicht geladen werden (im converter) (bsp "a b c" lädt 5 bilder runter, nicht 3)
 
         ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15);
