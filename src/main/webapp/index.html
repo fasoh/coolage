@@ -12,8 +12,11 @@
     <!-- Bootstrap Core CSS - Uses Bootswatch Flatly Theme: http://bootswatch.com/flatly/ -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom CSS -->
+    <!-- Freelancer CSS -->
     <link href="css/freelancer.css" rel="stylesheet">
+
+    <!-- Coolage CSS -->
+    <link href="css/coolage.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -71,10 +74,11 @@
     <header id="new">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <img class="img-responsive" src="img/profile.png" alt="">
+                <div class="col-lg-6 col-lg-offset-3">
                     <div class="intro-text">
                         <span class="name">Coolage</span>
+                        <input type="filepicker-dragdrop" data-fp-drag-text="Klicken zum Auswählen oder Bilder hierher ziehen" data-fp-button-class="pickerButton" data-fp-drag-class="dragAndDrop" data-fp-apikey="AWIbpSNFSOGpA9536aaQVz" data-fp-mimetypes="image/*" data-fp-container="modal" data-fp-multiple="true" data-fp-services="COMPUTER,DROPBOX,FACEBOOK,GOOGLE_DRIVE,INSTAGRAM,URL" onchange="out='';for(var i=0;i<event.fpfiles.length;i++){out+=event.fpfiles[i].url;out+=' '};alert(out)">
+
                         <hr class="star-light">
                         <span class="skills">Generiere deine eigene Bildercollage</span>
                     </div>
@@ -462,6 +466,8 @@
     <!-- Custom Theme JavaScript -->
     <script src="js/freelancer.js"></script>
 
+    <!-- FilePicker -->
+    <script type="text/javascript" src="//api.filepicker.io/v2/filepicker.js"></script>
 </body>
 
 </html>

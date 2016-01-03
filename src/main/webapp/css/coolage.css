@@ -1,0 +1,20 @@
+.pickerButton {
+    display: none;
+}
+
+.dragAndDrop {
+    display: block !important;
+    padding-top: 250px !important;
+    padding-bottom: 10px !important;
+    border-radius: 0 !important;
+    background-color: #2c3e50 !important;
+    color: white !important;
+    background-image: url(../img/profile.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    border-color: rgb(205, 205, 205) !important;
+}
+
+#filepicker_shade {
+    z-index: 9999;
+}
