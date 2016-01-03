@@ -4,15 +4,15 @@
 
 .dragAndDrop {
     display: block !important;
-    padding-top: 250px !important;
-    padding-bottom: 10px !important;
+    padding-top: 205px !important;
+    padding-bottom: 15px !important;
     border-radius: 0 !important;
-    background-color: #2c3e50 !important;
-    color: white !important;
-    background-image: url(../img/profile.png);
+    background-color: #efc849 !important;
+    color: #2c3e50 !important;
+    background-image: url(../img/pencil.png);
     background-position: center;
     background-repeat: no-repeat;
-    border-color: rgb(205, 205, 205) !important;
+    border-color: #2c3e50 !important;
 }
 
 #filepicker_shade {
