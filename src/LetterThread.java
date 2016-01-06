@@ -8,6 +8,7 @@ import org.opencv.core.Point;
 import javax.imageio.ImageIO;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -65,7 +66,7 @@ public class LetterThread implements Callable<BufferedImage> {
         synchronized (syncObject) {
             try {
                 double scale = 1;
-                int accuracyTiles = 10;
+                int accuracy = 10; //Je höher desto genauer
                 double quality;
 
                 if (text.charAt(glyphCounter) != ' ') {
@@ -73,23 +74,23 @@ public class LetterThread implements Callable<BufferedImage> {
                     Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
 
                     if (detectFaces(tempMat) != null) {
-                        int[] bestCoordinates = getBestCoordinates(rawImage, accuracyTiles);
+                        int[] bestCoordinates = getBestCoordinates(rawImage, accuracy, text.charAt(glyphCounter));
                         photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
                         photoGlyph = cropImage(photoGlyph, margin);
                         quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
                         System.out.println("Letter " + text.charAt(glyphCounter) +
                                 " at position " + (glyphCounter + 1) +
                                 " contains " + amountOfFaces + " face/s" +
-                                " and has a quality of " + quality + ".");
+                                " and has a quality of " + (quality*100) + ".");
                     } else {
-                        int[] bestCoordinates = getBestCoordinates(tresholdImage(rawImage), accuracyTiles);
+                        int[] bestCoordinates = getBestCoordinates(tresholdImage(rawImage), accuracy, text.charAt(glyphCounter));
                         photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
                         photoGlyph = cropImage(photoGlyph, margin);
                         quality = getQualityOfPosition(tresholdImage(rawImage), text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
                         System.out.println("Letter " + text.charAt(glyphCounter) +
                                 " at position " + (glyphCounter + 1) +
                                 " contains " + amountOfFaces + " face/s" +
-                                ", the treshold quality is " + quality + ".");
+                                ", and has a treshold quality of " + (quality*100) + ".");
                     }
 
                 } else {
@@ -105,18 +106,20 @@ public class LetterThread implements Callable<BufferedImage> {
         }
     }
 
-    public int[] getBestCoordinates(BufferedImage buffImage, int accuracyTiles){
+    public int[] getBestCoordinates(BufferedImage buffImage, int accuracyTiles, Character character){
         synchronized (syncObject) {
             double bestQuality = 0;
             int bestX = 0;
             int bestY = 0;
+            int letterMargin = 9; //TODO Durch Testen herausgefunden, evtl. falsch/variabel
+            int letterSize = getFontWidth(font, String.valueOf(character)); //TODO mit diesen Werten von Anfang an feststellen ob ein Bild zu klein ist oder nicht
 
-            int stepsX = buffImage.getWidth() / accuracyTiles;
-            int stepsY = buffImage.getHeight() / accuracyTiles;
+            int accuracyX = buffImage.getWidth() / accuracyTiles;
+            int accuracyY = buffImage.getHeight() / accuracyTiles;
 
             outerloop:
-            for (int x = 0; x < buffImage.getWidth(); x += stepsX) {
-                for (int y = 0; y < buffImage.getHeight(); y += stepsY) {
+            for (int x = letterMargin; x < (buffImage.getWidth()-letterSize-letterMargin); x += accuracyX) {
+                for (int y = 0; y < (buffImage.getHeight()-letterSize-letterMargin); y += accuracyY) { //TODO rausfinden warum man bei y auch WIDTH abzieht und nicht height (völlig falsche werte bei height, width-wert stimmt immer exakt)
                     double newQuality = getQualityOfPosition(buffImage, text.charAt(glyphCounter), 1, x, y);
                     if (newQuality != 0 && newQuality > bestQuality) {
                         bestQuality = newQuality;
@@ -131,6 +134,14 @@ public class LetterThread implements Callable<BufferedImage> {
 
             return new int[]{bestX, bestY};
         }
+    }
+
+    public int getFontWidth(Font font, String letter){
+        AffineTransform affinetransform = new AffineTransform();
+        FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
+        int textwidth = (int)(font.getStringBounds(letter, frc).getWidth());
+
+        return textwidth;
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
