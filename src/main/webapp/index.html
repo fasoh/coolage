@@ -76,11 +76,9 @@
             <div class="row">
                 <div class="col-lg-6 col-lg-offset-3">
                     <div class="intro-text">
-                        <span class="name">Coolage</span>
-                        <input type="filepicker-dragdrop" data-fp-drag-text="Klicken zum Auswählen oder Bilder hierher ziehen" data-fp-button-class="pickerButton" data-fp-drag-class="dragAndDrop" data-fp-apikey="AWIbpSNFSOGpA9536aaQVz" data-fp-mimetypes="image/*" data-fp-container="modal" data-fp-multiple="true" data-fp-services="COMPUTER,DROPBOX,FACEBOOK,GOOGLE_DRIVE,INSTAGRAM,URL" onchange="out='';for(var i=0;i<event.fpfiles.length;i++){out+=event.fpfiles[i].url;out+=' '};alert(out)">
-
-                        <hr class="star-light">
-                        <span class="skills">Generiere deine eigene Bildercollage</span>
+                        <input placeholder="Text eingeben" class="coolageText" type="text" name="coolageText" id="coolageText">
+                        <input type="filepicker-dragdrop" data-fp-drag-text="Klicken zum Auswählen oder Bilder hierher ziehen" data-fp-button-class="pickerButton" data-fp-drag-class="dragAndDrop" data-fp-apikey="AWIbpSNFSOGpA9536aaQVz" data-fp-mimetypes="image/*" data-fp-container="modal" data-fp-multiple="true" data-fp-services="COMPUTER,DROPBOX,FACEBOOK,GOOGLE_DRIVE,INSTAGRAM,URL" onchange="startCoolage(event.fpfiles)">
+                        <button class="btn btn-lg btn-outline">Coolage generieren</button>
                     </div>
                 </div>
             </div>
@@ -456,15 +454,13 @@
 
     <!-- Plugin JavaScript -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
-    <script src="js/classie.js"></script>
     <script src="js/cbpAnimatedHeader.js"></script>
-
-    <!-- Contact Form JavaScript -->
-    <script src="js/jqBootstrapValidation.js"></script>
-    <script src="js/contact_me.js"></script>
 
     <!-- Custom Theme JavaScript -->
     <script src="js/freelancer.js"></script>
+
+    <!-- Coolage JavaScript -->
+    <script src="js/coolage.js"></script>
 
     <!-- FilePicker -->
     <script type="text/javascript" src="//api.filepicker.io/v2/filepicker.js"></script>

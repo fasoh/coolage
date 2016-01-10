@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>camelUp</groupId>
-    <artifactId>camelUp</artifactId>
+    <groupId>coolage</groupId>
+    <artifactId>coolage</artifactId>
     <version>0.1</version>
     <packaging>war</packaging>
-    <name>Camel Up</name>
+    <name>Coolage</name>
     <properties>
         <skipTests>true</skipTests>
     </properties>

@@ -6,6 +6,7 @@
     display: block !important;
     padding-top: 205px !important;
     padding-bottom: 15px !important;
+    margin-left: 0 !important;
     border-radius: 0 !important;
     background-color: #efc849 !important;
     color: #2c3e50 !important;
@@ -15,6 +16,42 @@
     border-color: #2c3e50 !important;
 }
 
+.intro-text > div {
+    padding: 0 !important;
+}
+
 #filepicker_shade {
     z-index: 9999;
+}
+
+.coolageText {
+    background-color: #15a589;
+    color: white;
+    border: none;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    font-size: 33px;
+    font-family: Montserrat, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    width: 100%;
+}
+
+::-webkit-input-placeholder {
+    color: #e8e8e8;
+}
+
+:-moz-placeholder {
+    color: #e8e8e8;
+}
+
+:-ms-input-placeholder {
+    color: #e8e8e8;
+}
+
+:-ms-input-placeholder {
+    color: #e8e8e8;
+}
+
+:placeholder-shown {
+    color: #e8e8e8;
 }
