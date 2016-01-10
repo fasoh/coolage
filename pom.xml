@@ -8,9 +8,6 @@
     <version>0.1</version>
     <packaging>war</packaging>
     <name>Coolage</name>
-    <properties>
-        <skipTests>true</skipTests>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -23,6 +20,11 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20140107</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>9.2.10.v20150310</version>
         </dependency>
     </dependencies>
 

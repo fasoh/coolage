@@ -1,3 +1,5 @@
+package de.uniOldenburg.model;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,9 +13,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 
-/**
- * Created by Jannik on 27.10.15.
- */
 public class ResourceLoader {
 
     Converter convert = new Converter();

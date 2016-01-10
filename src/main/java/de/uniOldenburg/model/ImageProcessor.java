@@ -1,13 +1,11 @@
+package de.uniOldenburg.model;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
-
-/**
- * Created by Jannik on 27.10.15.
- */
 
 public class ImageProcessor {
 

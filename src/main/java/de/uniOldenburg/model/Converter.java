@@ -1,3 +1,5 @@
+package de.uniOldenburg.model;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
@@ -8,9 +10,6 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created by Jannik on 27.10.15.
- */
 public class Converter {
 
     public void saveBuffImgAsPNG(BufferedImage buffImage) {

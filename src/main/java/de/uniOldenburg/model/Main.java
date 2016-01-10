@@ -1,3 +1,5 @@
+package de.uniOldenburg.model;
+
 import org.opencv.core.*;
 
 import java.awt.*;
