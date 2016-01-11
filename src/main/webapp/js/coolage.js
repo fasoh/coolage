@@ -21,9 +21,16 @@ $(function() {
 	});
 
 	$('#generateCoolage').click(function() {
+
+		var imagesString = '';
+
+		$.each(images, function(id, image) {
+			imagesString += image.url + ";";
+		});
+
 		$.post('api/getCoolage', {
-			images: images,
-			text: text
+			images: imagesString,
+			text: $('#coolageText').val()
 		}, function(data, status) {
 			alert(data);
 		});

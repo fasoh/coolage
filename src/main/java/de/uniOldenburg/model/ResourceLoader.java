@@ -55,7 +55,7 @@ public class ResourceLoader {
         Font customFont = null;
 
         try {
-            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/resources/" + fontName)).deriveFont(Font.PLAIN, fontSize);
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File(System.getProperty("user.dir") + "/src/main/resources/" + fontName)).deriveFont(Font.PLAIN, fontSize);
         } catch (IOException e) {
             throw new FileNotFoundException();
         } catch(FontFormatException e) {
@@ -79,7 +79,7 @@ public class ResourceLoader {
             ge.registerFont(customFont);
 
             ReadableByteChannel rbc = Channels.newChannel(fontUrl.openStream());
-            FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/src/resources/" + urlString.split("/")[urlString.split("/").length-1]);
+            FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/src/main/resources/" + urlString.split("/")[urlString.split("/").length-1]);
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 
         } catch (MalformedURLException e) {
@@ -100,13 +100,13 @@ public class ResourceLoader {
 
         // Try finding local image – else download from source
         try {
-            image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/cache/" + fileName);
+            image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/main/cache/" + fileName);
             System.out.print("cached - ");
         } catch (IOException e) {
 
             try {
                 image = this.imageFromURL(url);
-                ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/cache/" + fileName));
+                ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/main/cache/" + fileName));
                 System.out.print("downloaded - ");
             } catch (IOException f) {
                 f.printStackTrace();

@@ -15,9 +15,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.concurrent.Callable;
 
-/**
- * Created by Jannik on 01.12.15.
- */
 
 public class LetterThread implements Callable<BufferedImage> {
 
@@ -39,6 +36,7 @@ public class LetterThread implements Callable<BufferedImage> {
      * Konstruktor für alle Bilder nach dem ersten (die zum vorherigen gestitched werden sollen)
      */
     public LetterThread(BufferedImage rawImage, String text, int glyphCounter, Font font, float borderSize, Color borderColor, int margin) {
+
         this.rawImage = rawImage;
         this.text = text;
         this.glyphCounter = glyphCounter;
@@ -255,7 +253,7 @@ public class LetterThread implements Callable<BufferedImage> {
     public Rect[] detectFaces(Mat rawImage) {
         synchronized (syncObject) {
             MatOfRect faceDetections = new MatOfRect();
-            CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/resources/lbpcascade_frontalface.xml");
+            CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/main/resources/lbpcascade_frontalface.xml");
 
             faceDetector.detectMultiScale(rawImage, faceDetections);
 

@@ -1,5 +1,7 @@
 package de.uniOldenburg.model;
 
+import org.opencv.core.Core;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

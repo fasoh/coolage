@@ -1,36 +1,26 @@
 package de.uniOldenburg.presenter;
 
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import de.uniOldenburg.model.*;
-import org.opencv.core.*;
-
 
 @WebServlet("/api/getCoolage")
 public class CoolageServlet extends HttpServlet {
 
+
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        // Load the native library.
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-        JSONObject requestData = getJSONData(request.getInputStream());
-
-        response.getWriter().write(requestData.getJSONArray("images").toString());
-
+        String text =  request.getParameter("text");
+        String allImages =  request.getParameter("images");
+        response.getWriter().write(allImages);
+        
         /*
         ResourceLoader resourceLoader = new ResourceLoader();
         Dimension boundary = new Dimension(620, 414);
@@ -42,7 +32,6 @@ public class CoolageServlet extends HttpServlet {
         urlList.add("http://blogs.reuters.com/great-debate/files/2013/07/obama-best.jpg");
         urlList.add("http://stockfresh.com/files/g/goce/m/98/5167439_stock-photo-green-barley-field-nature-background.jpg");
         String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-        String text = "tes";
         //TODO Für leerzeichen muss das bild nicht geladen werden (im converter) (bsp "a b c" lädt 5 bilder runter, nicht 3)
 
         ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15);
@@ -51,29 +40,8 @@ public class CoolageServlet extends HttpServlet {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+        */
 
         System.out.println("Done!");
-
-        response.getWriter().write("<html><body>GET response</body></html>");
-
-        */
-    }
-
-    private JSONObject getJSONData(ServletInputStream stream) throws IOException {
-        String input = getStringFromInputStream(stream);
-
-        if (input.equals("")) {
-            return new JSONObject();
-        } else {
-            return new JSONObject(new JSONTokener(input));
-        }
-    }
-
-    private String getStringFromInputStream(ServletInputStream stream) throws IOException {
-        String inputString = "";
-        BufferedReader in = new BufferedReader(new InputStreamReader(stream));
-        for (String buffer; (buffer = in.readLine()) != null; inputString += buffer + "\n") ;
-
-        return inputString;
     }
 }
