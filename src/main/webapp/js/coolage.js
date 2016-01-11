@@ -32,7 +32,7 @@ $(function() {
 			images: imagesString,
 			text: $('#coolageText').val()
 		}, function(data, status) {
-			alert(data);
+			
 		});
 	});
 });
