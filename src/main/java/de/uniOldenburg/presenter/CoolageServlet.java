@@ -19,13 +19,12 @@ public class CoolageServlet extends HttpServlet {
 
         String text =  request.getParameter("text");
         String allImages =  request.getParameter("images");
-        response.getWriter().write(allImages);
-        
-        /*
-        ResourceLoader resourceLoader = new ResourceLoader();
-        Dimension boundary = new Dimension(620, 414);
-        ArrayList<String> urlList = new ArrayList<String>();
 
+        ResourceLoader resourceLoader = new ResourceLoader();
+
+        Dimension boundary = new Dimension(620, 414);
+
+        ArrayList<String> urlList = new ArrayList<String>();
         urlList.add("http://lh5.ggpht.com/fkOpCsPe9PNSEjcCzmWpbHbtOJ3MuMCujcj9jWmAwrE3KwoXTjQb5Eq4IGOSgWO2fEf9HP2rceZgh1d7=s620");
         urlList.add("http://knowingtechnologies.com/wp-content/uploads/2015/06/iStock_000046819354_Medium-600x400.jpg");
         urlList.add("http://lh4.ggpht.com/8MCTX5uAr5bJxXzVdkk-vETHKTHQQZVp9dl9xqaaBNcTfvjkl8P05elW7f1aSf5Gd_ewxs4Wpgcjqb-Xfsk=s620");
@@ -40,8 +39,10 @@ public class CoolageServlet extends HttpServlet {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        */
 
         System.out.println("Done!");
+
+
+        response.getWriter().write(allImages);
     }
 }

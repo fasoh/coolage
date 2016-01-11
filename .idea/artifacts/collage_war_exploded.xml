@@ -19,6 +19,7 @@
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-security:9.2.10.v20150310" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-server:9.2.10.v20150310" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-http:9.2.10.v20150310" />
+          <element id="library" level="project" name="opencv-300" />
         </element>
       </element>
       <element id="directory" name="META-INF">

@@ -11,6 +11,10 @@ import java.util.concurrent.*;
 
 public class ImageProcessor {
 
+    static {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
+
     private Font font;
     private Color backgroundColor;
     private float borderSize;
