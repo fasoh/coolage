@@ -4,12 +4,13 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import org.opencv.core.Point;
 
+import javax.imageio.ImageIO;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -65,7 +66,7 @@ public class LetterThread implements Callable<BufferedImage> {
         synchronized (syncObject) {
             try {
                 double scale = 1;
-                int accuracyTiles = 10;
+                int accuracy = 10; //Je höher desto genauer
                 double quality;
 
                 if (text.charAt(glyphCounter) != ' ') {
@@ -73,16 +74,23 @@ public class LetterThread implements Callable<BufferedImage> {
                     Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
 
                     if (detectFaces(tempMat) != null) {
-                        int[] bestCoordinates = getBestCoordinates(accuracyTiles);
+                        int[] bestCoordinates = getBestCoordinates(rawImage, accuracy, text.charAt(glyphCounter));
                         photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
                         photoGlyph = cropImage(photoGlyph, margin);
                         quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                        System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s and has a quality of " + quality);
+                        System.out.println("Letter " + text.charAt(glyphCounter) +
+                                " at position " + (glyphCounter + 1) +
+                                " contains " + amountOfFaces + " face/s" +
+                                " and has a quality of " + (quality*100) + ".");
                     } else {
-                        //TODO getBestCoordinates(accuracyTiles) mit Intensität oder treshold ausführen und für getPhotoGlyph übergeben
-                        photoGlyph = this.getPhotoGlyph(tresholdTest(rawImage), text.charAt(glyphCounter), scale, 0, 0);
+                        int[] bestCoordinates = getBestCoordinates(tresholdImage(rawImage), accuracy, text.charAt(glyphCounter));
+                        photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
                         photoGlyph = cropImage(photoGlyph, margin);
-                        System.out.println("Letter " + text.charAt(glyphCounter) + " at position " + (glyphCounter + 1) + " contains " + amountOfFaces + " face/s, the treshold quality is [not yet implemented].");
+                        quality = getQualityOfPosition(tresholdImage(rawImage), text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                        System.out.println("Letter " + text.charAt(glyphCounter) +
+                                " at position " + (glyphCounter + 1) +
+                                " contains " + amountOfFaces + " face/s" +
+                                ", and has a treshold quality of " + (quality*100) + ".");
                     }
 
                 } else {
@@ -98,19 +106,21 @@ public class LetterThread implements Callable<BufferedImage> {
         }
     }
 
-    public int[] getBestCoordinates(int accuracyTiles){
+    public int[] getBestCoordinates(BufferedImage buffImage, int accuracyTiles, Character character){
         synchronized (syncObject) {
             double bestQuality = 0;
             int bestX = 0;
             int bestY = 0;
+            int letterMargin = 9; //TODO Durch Testen herausgefunden, evtl. falsch/variabel
+            int letterSize = getFontWidth(font, String.valueOf(character)); //TODO mit diesen Werten von Anfang an feststellen ob ein Bild zu klein ist oder nicht
 
-            int stepsX = rawImage.getWidth() / accuracyTiles;
-            int stepsY = rawImage.getHeight() / accuracyTiles;
+            int accuracyX = buffImage.getWidth() / accuracyTiles;
+            int accuracyY = buffImage.getHeight() / accuracyTiles;
 
             outerloop:
-            for (int x = 0; x < rawImage.getWidth(); x += stepsX) {
-                for (int y = 0; y < rawImage.getHeight(); y += stepsY) {
-                    double newQuality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), 1, x, y);
+            for (int x = letterMargin; x < (buffImage.getWidth()-letterSize-letterMargin); x += accuracyX) {
+                for (int y = 0; y < (buffImage.getHeight()-letterSize-letterMargin); y += accuracyY) { //TODO rausfinden warum man bei y auch WIDTH abzieht und nicht height (völlig falsche werte bei height, width-wert stimmt immer exakt)
+                    double newQuality = getQualityOfPosition(buffImage, text.charAt(glyphCounter), 1, x, y);
                     if (newQuality != 0 && newQuality > bestQuality) {
                         bestQuality = newQuality;
                         bestX = x;
@@ -124,6 +134,14 @@ public class LetterThread implements Callable<BufferedImage> {
 
             return new int[]{bestX, bestY};
         }
+    }
+
+    public int getFontWidth(Font font, String letter){
+        AffineTransform affinetransform = new AffineTransform();
+        FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
+        int textwidth = (int)(font.getStringBounds(letter, frc).getWidth());
+
+        return textwidth;
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
@@ -170,34 +188,25 @@ public class LetterThread implements Callable<BufferedImage> {
             Mat tempMat = new Mat(buffImage.getHeight(), buffImage.getWidth(), CvType.CV_8UC3);
             Rect[] faces = this.detectFaces(converter.BufferedToMat(converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR)));
 
-            Graphics2D canvas = qualityAreas.createGraphics();
-            canvas.setColor(Color.RED);
-
-            if (faces.length == 0) {
-                return 0;
-            } else {
+            if (faces != null) { //Wenn Gesichtserkennung
+                Graphics2D canvas = qualityAreas.createGraphics();
+                canvas.setColor(Color.RED);
                 for (Rect face : faces) {
-                    //canvas.fill(new Rectangle(face.x, face.y, face.width, face.height));
-                    Point center= new Point(face.x + face.width*0.5, face.y + face.height*0.5 );
+                    Point center = new Point(face.x + face.width * 0.5, face.y + face.height * 0.5);
                     Imgproc.ellipse(tempMat, center, new Size(face.width * 0.5, face.height * 0.5), 0, 0, 360, new Scalar(0, 0, 255), -1);
                     //ellipse(Mat img, Point center, Size axes, double angle, double startAngle, double endAngle, Scalar color, int thickness)
                 }
 
                 qualityAreas = converter.MatToBuffered(tempMat);
-
                 canvas.dispose();
 
-                BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
-
-                // Save image for visualisation
-                /*try {
-                    ImageIO.write(croppedQualityAres, "jpg", new File(System.getProperty("user.dir") + "/quality.jpg"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
-
-                return ((double) this.countQualityPixels(croppedQualityAres) / (double) this.countQualityPixels(qualityAreas));
+            } else { //Wenn Tresholding
+                qualityAreas = buffImage;
             }
+
+            BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
+
+            return ( this.countQualityPixels(croppedQualityAres) / this.countQualityPixels(qualityAreas));
         }
     }
 
@@ -206,11 +215,11 @@ public class LetterThread implements Callable<BufferedImage> {
      * @param qualityAreas Quality Image
      * @return number of black pixels
      */
-    private int countQualityPixels (BufferedImage qualityAreas) {
+    private double countQualityPixels (BufferedImage qualityAreas) {
         synchronized (syncObject) {
             int photoWidth = qualityAreas.getWidth();
             int photoHeight = qualityAreas.getHeight();
-            int qualityPixels = 0;
+            double qualityPixels = 0;
 
             for (int x = 0; x < photoWidth; x++) {
                 for (int y = 0; y < photoHeight; y++) {
@@ -223,9 +232,27 @@ public class LetterThread implements Callable<BufferedImage> {
         }
     }
 
-    public BufferedImage tresholdTest(BufferedImage buffImage){
+    private BufferedImage swapBlackToRed(BufferedImage inputImage){
+        synchronized (syncObject){
+            int photoWidth = inputImage.getWidth();
+            int photoHeight = inputImage.getHeight();
+            //rot 0xFFFF0000
+
+            for (int x = 0; x < photoWidth; x++) {
+                for (int y = 0; y < photoHeight; y++) {
+                    if (inputImage.getRGB(x, y) != -1) { //-1 ist weiss
+                        inputImage.setRGB(x, y, 0xFFFF0000);
+                    }
+                }
+            }
+
+            return inputImage;
+        }
+    }
+
+    public BufferedImage tresholdImage(BufferedImage buffImage){
         synchronized (syncObject) {
-            BufferedImage tresholdTest = null;
+            BufferedImage tresholdedImage = null;
             try {
                 buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
                 Mat sourceMat = converter.BufferedToMat(buffImage);
@@ -234,19 +261,21 @@ public class LetterThread implements Callable<BufferedImage> {
 
                 Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_RGB2GRAY);
 
-                Imgproc.threshold(sourceMat, destinationMat, 180, 255, Imgproc.THRESH_BINARY);
-                //Imgproc.adaptiveThreshold(sourceMat, destinationMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 40);
+                Imgproc.adaptiveThreshold(sourceMat, destinationMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 11, 5);
+                //Dokumentation zu adaptiveTreshold -  http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold
 
                 Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
 
-                tresholdTest = converter.MatToBuffered(destinationMat);
+                tresholdedImage = converter.MatToBuffered(destinationMat);
 
-                ImageIO.write(tresholdTest, "jpg", new File(System.getProperty("user.dir") + "/treshold.jpg"));
+                tresholdedImage = swapBlackToRed(tresholdedImage);
+
+                ImageIO.write(tresholdedImage, "jpg", new File(System.getProperty("user.dir") + "/tresholdTestOutput.jpg"));
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return tresholdTest;
+            return tresholdedImage;
         }
     }
 
