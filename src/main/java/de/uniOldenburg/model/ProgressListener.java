@@ -39,6 +39,12 @@ public class ProgressListener {
         sendStatusToClient(status);
     }
 
+    public void sendFinalImage(String url) {
+        JSONObject status = new JSONObject();
+        status.put("image", url);
+        sendStatusToClient(status);
+    }
+
     private void sendStatusToClient(JSONObject status) {
         try {
             this.session.getRemote().sendString(status.toString());

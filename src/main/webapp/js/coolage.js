@@ -26,6 +26,11 @@ $(function() {
 
 		var imagesString = '';
 
+		$('#final-image').hide();
+		$('#server-progress').show();
+		$('#cancel').show();
+		$('#done').hide();
+
 		$.each(images, function(id, image) {
 			imagesString += image.url + ";";
 		});
@@ -50,6 +55,13 @@ $(function() {
 			}
 			if (message.task) {
 				$('#progress-hint').text(message.task);
+			}
+			if (message.image) {
+				$('#final-image').attr('src', 'http://' + window.location.hostname + ':' + window.location.port + message.image);
+				$('#server-progress').hide();
+				$('#final-image').show();
+				$('#cancel').hide();
+				$('#done').show();
 			}
 		};
 

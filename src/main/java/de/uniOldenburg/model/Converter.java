@@ -12,12 +12,15 @@ import java.io.IOException;
 
 public class Converter {
 
-    public void saveBuffImgAsPNG(BufferedImage buffImage) {
+    public String saveBuffImgAsPNG(BufferedImage buffImage) {
+
         try {
-            ImageIO.write(buffImage, "png", new File(System.getProperty("user.dir") + "/collage.png"));
+            ImageIO.write(buffImage, "png", new File(System.getProperty("user.dir") + "/src/main/webapp/collage.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return "/collage.png";
     }
 
     public BufferedImage toBufferedImageOfType(BufferedImage original, int type) {

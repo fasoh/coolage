@@ -26,6 +26,8 @@ $(function() {
 
 		var imagesString = '';
 
+		$('#final-image').hide();
+
 		$.each(images, function(id, image) {
 			imagesString += image.url + ";";
 		});
@@ -42,19 +44,21 @@ $(function() {
 			}));
 		};
 
-		/*
-		$.post('api/getCoolage', {
-			images: imagesString,
-			text: $('#coolageText').val()
-		}, function(data, status) {
-			
-		});
-		*/
+		serverSocket.onmessage = function(message) {
+			message = JSON.parse(message.data);
+
+			if (message.percentage) {
+				$('#coolage-progress').width(message.percentage + '%');
+			}
+			if (message.task) {
+				$('#progress-hint').text(message.task);
+			}
+			if (message.image) {
+				$('#final-image').attr('src', 'http://' + window.location.hostname + ':' + window.location.port + message.images);
+				$('#final-image').show();
+			}
+		};
 
 		$('.progress-modal').modal('show');
-		$('#coolage-progress').width('0%');
-		$('#progress-hint').text('Bilder werden übertragen');
-
-
 	});
 });

@@ -454,15 +454,21 @@
                     <h4 class="modal-title">Coolage wird generiert</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped active" id="coolage-progress" role="progressbar">
+                    <div id="server-progress">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped active" id="coolage-progress" role="progressbar">
+                            </div>
+                        </div>
+                        <div id="progress-hint">
                         </div>
                     </div>
-                    <div id="progress-hint">
+                    <div class="image-frame">
+                        <img src="#" id="final-image" alt="final image">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                    <button id="cancel" type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                    <button id="done" type="button" class="btn btn-primary" data-dismiss="modal">Fertig</button>
                 </div>
             </div>
         </div>

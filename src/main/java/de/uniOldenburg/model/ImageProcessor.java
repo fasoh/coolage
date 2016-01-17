@@ -83,8 +83,9 @@ public class ImageProcessor {
             }
         }
 
-        converter.saveBuffImgAsPNG(finalImage);
         service.shutdownNow();
+        String url = converter.saveBuffImgAsPNG(finalImage);
+        progress.sendFinalImage(url);
     }
 
     public void saveImage(BufferedImage bufferedImage){
