@@ -14,10 +14,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 
 
-public class LetterThread implements Callable<BufferedImage> {
+public class LetterThread implements Callable<LetterResult> {
 
     private BufferedImage rawImage;
     private String text;
@@ -26,6 +27,7 @@ public class LetterThread implements Callable<BufferedImage> {
     private float borderSize;
     private Color borderColor;
     private int margin;
+    private ProgressListener progress;
     BufferedImage photoGlyph;
     Converter converter = new Converter();
     public final static Object syncObject = new Object();
@@ -36,7 +38,7 @@ public class LetterThread implements Callable<BufferedImage> {
     /**
      * Konstruktor für alle Bilder nach dem ersten (die zum vorherigen gestitched werden sollen)
      */
-    public LetterThread(BufferedImage rawImage, String text, int glyphCounter, Font font, float borderSize, Color borderColor, int margin) {
+    public LetterThread(BufferedImage rawImage, String text, int glyphCounter, Font font, float borderSize, Color borderColor, int margin, ProgressListener progress) {
 
         this.rawImage = rawImage;
         this.text = text;
@@ -44,65 +46,65 @@ public class LetterThread implements Callable<BufferedImage> {
         this.font = font;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
-        this.margin= margin;
+        this.margin = margin;
+        this.progress = progress;
     }
 
     /**
      * Konstruktor für das allererste Bild (welches nicht gestitched werden soll)
      */
-    public LetterThread(BufferedImage rawImage, String text, Font font, float borderSize, Color borderColor, int margin) {
+    public LetterThread(BufferedImage rawImage, String text, Font font, float borderSize, Color borderColor, int margin, ProgressListener progress) {
         this.rawImage = rawImage;
         this.text = text;
         this.font = font;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
         this.margin = margin;
+        this.progress = progress;
     }
 
     /**
      * Methode, die für jeden Thread vom Callable aufgerufen wird (analog zu run() bei Threads)
      */
-    public BufferedImage call() {
+    public LetterResult call() {
         synchronized (syncObject) {
-            try {
-                double scale = 1;
-                int accuracy = 10; //Je höher desto genauer
-                double quality;
 
-                if (text.charAt(glyphCounter) != ' ') {
+            LetterResult result;
+            double scale = 1;
+            int accuracy = 10; //Je höher desto genauer
+            double quality;
 
-                    Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
+            if (text.charAt(glyphCounter) != ' ') {
 
-                    if (detectFaces(tempMat) != null) {
-                        int[] bestCoordinates = getBestCoordinates(rawImage, accuracy, text.charAt(glyphCounter));
-                        photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                        photoGlyph = cropImage(photoGlyph, margin);
-                        quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                        System.out.println("Letter " + text.charAt(glyphCounter) +
-                                " at position " + (glyphCounter + 1) +
-                                " contains " + amountOfFaces + " face/s" +
-                                " and has a quality of " + (quality*100) + ".");
-                    } else {
-                        int[] bestCoordinates = getBestCoordinates(tresholdImage(rawImage), accuracy, text.charAt(glyphCounter));
-                        photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                        photoGlyph = cropImage(photoGlyph, margin);
-                        quality = getQualityOfPosition(tresholdImage(rawImage), text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
-                        System.out.println("Letter " + text.charAt(glyphCounter) +
-                                " at position " + (glyphCounter + 1) +
-                                " contains " + amountOfFaces + " face/s" +
-                                ", and has a treshold quality of " + (quality*100) + ".");
-                    }
+                Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(rawImage, BufferedImage.TYPE_3BYTE_BGR));
 
+                if (detectFaces(tempMat) != null) {
+                    int[] bestCoordinates = getBestCoordinates(rawImage, accuracy, text.charAt(glyphCounter));
+                    photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                    photoGlyph = cropImage(photoGlyph, margin);
+                    quality = getQualityOfPosition(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+
+                    result = new LetterResult(photoGlyph, text.charAt(glyphCounter), (glyphCounter + 1), amountOfFaces, quality*100);
                 } else {
-                    photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
-                    System.out.println("Empty space at position " + (glyphCounter + 1));
+                    int[] bestCoordinates = getBestCoordinates(tresholdImage(rawImage), accuracy, text.charAt(glyphCounter));
+                    photoGlyph = this.getPhotoGlyph(rawImage, text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                    photoGlyph = cropImage(photoGlyph, margin);
+                    quality = getQualityOfPosition(tresholdImage(rawImage), text.charAt(glyphCounter), scale, bestCoordinates[0], bestCoordinates[1]);
+                    result = new LetterResult(photoGlyph, text.charAt(glyphCounter), (glyphCounter + 1), amountOfFaces, quality*100);
+                    System.out.println("Letter " + text.charAt(glyphCounter) +
+                            " at position " + (glyphCounter + 1) +
+                            " contains " + amountOfFaces + " face/s" +
+                            ", and has a treshold quality of " + (quality*100) + ".");
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else {
+                photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); //Create new image for empty space in text (width, height)
+                result = new LetterResult(photoGlyph, true, (glyphCounter + 1));
+                System.out.println("Empty space at position " + (glyphCounter + 1));
             }
 
-            return photoGlyph;
+            progress.letterFinished(result);
+            return result;
         }
     }
 
@@ -189,8 +191,10 @@ public class LetterThread implements Callable<BufferedImage> {
             Rect[] faces = this.detectFaces(converter.BufferedToMat(converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR)));
 
             if (faces != null) { //Wenn Gesichtserkennung
-                Graphics2D canvas = qualityAreas.createGraphics();
-                canvas.setColor(Color.RED);
+
+                //Fill background width WHITE
+                Imgproc.rectangle(tempMat, new Point(0,0), new Point(tempMat.width(), tempMat.height()), new Scalar(255, 255, 255));
+
                 for (Rect face : faces) {
                     Point center = new Point(face.x + face.width * 0.5, face.y + face.height * 0.5);
                     Imgproc.ellipse(tempMat, center, new Size(face.width * 0.5, face.height * 0.5), 0, 0, 360, new Scalar(0, 0, 255), -1);
@@ -198,15 +202,20 @@ public class LetterThread implements Callable<BufferedImage> {
                 }
 
                 qualityAreas = converter.MatToBuffered(tempMat);
-                canvas.dispose();
+
+                try {
+                    ImageIO.write(qualityAreas, "jpg", new File(System.getProperty("user.dir") + "/faceDetectionTestOutput.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             } else { //Wenn Tresholding
                 qualityAreas = buffImage;
             }
 
-            BufferedImage croppedQualityAres = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
+            BufferedImage croppedQualityAreas = this.getPhotoGlyph(qualityAreas, letter, imageScale, offsetX, offsetY);
 
-            return ( this.countQualityPixels(croppedQualityAres) / this.countQualityPixels(qualityAreas));
+            return ( this.countQualityPixels(croppedQualityAreas) / this.countQualityPixels(qualityAreas));
         }
     }
 

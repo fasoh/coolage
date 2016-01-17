@@ -1,5 +1,6 @@
 package de.uniOldenburg.model;
 
+import org.eclipse.jetty.websocket.api.Session;
 import org.opencv.core.Core;
 
 import java.awt.*;
@@ -21,45 +22,47 @@ public class ImageProcessor {
     private Color borderColor;
     private int margin;
     private BufferedImage finalImage = null;
+    private Session session;
 
-    public ImageProcessor(String fontFace, float fontSize, Color backgroundColor, float borderSize, Color borderColor, int margin) {
+    public ImageProcessor(String fontFace, float fontSize, Color backgroundColor, float borderSize, Color borderColor, int margin, Session session) {
         ResourceLoader resourceLoader = new ResourceLoader();
         this.font = resourceLoader.getFont(fontFace, fontSize);
         this.backgroundColor = backgroundColor;
         this.borderSize = borderSize;
         this.borderColor = borderColor;
         this.margin = margin;
+        this.session = session;
     }
 
     public void processImages(ArrayList<BufferedImage> buffImageList, String text) throws ExecutionException {
-
-        System.out.println("Creating collage...");
 
         text = text.toUpperCase();
         int glyphCounter = 0;
         boolean isFirstImage = true;
         Converter converter = new Converter();
 
+        ProgressListener progress = new ProgressListener(text, session);
+
         //for threadHandling with Callable
         final ExecutorService service;
-        List<Future<BufferedImage>> tasks = new ArrayList<Future<BufferedImage>>();
+        List<Future<LetterResult>> tasks = new ArrayList<Future<LetterResult>>();
         service = Executors.newFixedThreadPool(text.length()); //Max amount of threads working at the same time
 
-        for (BufferedImage rawImage : buffImageList){
+        for (BufferedImage rawImage : buffImageList) {
             if (glyphCounter == 0){
                 //Start thread without glyphCounter
-                tasks.add(service.submit(new LetterThread(rawImage, text, font, borderSize, borderColor, margin)));
+                tasks.add(service.submit(new LetterThread(rawImage, text, font, borderSize, borderColor, margin, progress)));
             } else {
                 //Start thread with glyphCounter
-                tasks.add(service.submit(new LetterThread(rawImage, text, glyphCounter, font, borderSize, borderColor, margin)));
+                tasks.add(service.submit(new LetterThread(rawImage, text, glyphCounter, font, borderSize, borderColor, margin, progress)));
             }
 
             glyphCounter++;
         }
 
-        for (Future<BufferedImage> task : tasks){
+        for (Future<LetterResult> task : tasks){
             try {
-                BufferedImage bufferedImage = task.get();
+                BufferedImage bufferedImage = task.get().letterImage;
 
                 if (isFirstImage){
                     bufferedImage = setBackgroundColor(bufferedImage, backgroundColor);
@@ -81,7 +84,6 @@ public class ImageProcessor {
         }
 
         converter.saveBuffImgAsPNG(finalImage);
-
         service.shutdownNow();
     }
 
@@ -127,5 +129,4 @@ public class ImageProcessor {
         return resultImage;
 
     }
-
 }

@@ -20,6 +20,8 @@ $(function() {
 		}
 	});
 
+	$('#generateCoolage').prop('disabled', false);
+
 	$('#generateCoolage').click(function() {
 
 		var imagesString = '';
@@ -28,11 +30,29 @@ $(function() {
 			imagesString += image.url + ";";
 		});
 
-		$.post('api/getCoolage', {
-			images: imagesString,
-			text: $('#coolageText').val()
-		}, function(data, status) {
-			
-		});
+		$('#progress-hint').text('Bilder werden übertragen');
+
+		var serverSocket = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/api/coolageSocket');
+
+		serverSocket.onopen = function() {
+
+			serverSocket.send(JSON.stringify({
+				images: imagesString,
+				text: $('#coolageText').val()
+			}));
+		};
+
+		serverSocket.onmessage = function(message) {
+			message = JSON.parse(message.data);
+
+			if (message.percentage) {
+				$('#coolage-progress').width(message.percentage + '%');
+			}
+			if (message.task) {
+				$('#progress-hint').text(message.task);
+			}
+		};
+
+		$('.progress-modal').modal('show');
 	});
 });

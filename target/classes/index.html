@@ -76,7 +76,7 @@
             <div class="row">
                 <div class="col-lg-6 col-lg-offset-3">
                     <div class="intro-text">
-                        <input maxlength="12" autocomplete="off" placeholder="Text eingeben" class="coolageText" type="text" name="coolageText" id="coolageText">
+                        <input maxlength="13" autocomplete="off" placeholder="Text eingeben" class="coolageText" type="text" name="coolageText" id="coolageText">
                         <input type="filepicker-dragdrop" data-fp-drag-text="Klicken zum Auswählen oder Bilder hierher ziehen" data-fp-button-class="pickerButton" data-fp-drag-class="dragAndDrop" data-fp-apikey="AWIbpSNFSOGpA9536aaQVz" data-fp-mimetypes="image/*" data-fp-container="modal" data-fp-multiple="true" data-fp-services="COMPUTER,DROPBOX,FACEBOOK,GOOGLE_DRIVE,INSTAGRAM,URL" onchange="startCoolage(event.fpfiles)">
                         <button class="btn btn-lg btn-outline" id="generateCoolage" disabled>Coolage generieren</button>
                     </div>
@@ -441,6 +441,28 @@
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade progress-modal" tabindex="-1" role="dialog" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Coolage wird generiert</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped active" id="coolage-progress" role="progressbar">
+                        </div>
+                    </div>
+                    <div id="progress-hint">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
                 </div>
             </div>
         </div>
