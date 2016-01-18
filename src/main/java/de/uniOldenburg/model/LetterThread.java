@@ -162,10 +162,7 @@ public class LetterThread implements Callable<LetterResult> {
 
     private BufferedImage drawFaces(Rect[] faces, int canvasWidth, int canvasHeight) {
         BufferedImage canvas;
-        Mat tempMat = new Mat(canvasWidth, canvasHeight, CvType.CV_8UC3);
-
-        //Fill background width WHITE
-        Imgproc.rectangle(tempMat, new Point(0,0), new Point(tempMat.width(), tempMat.height()), new Scalar(255, 255, 255));
+        Mat tempMat = new Mat(canvasWidth, canvasHeight, CvType.CV_8UC3, new Scalar(255, 255, 255));
 
         for (Rect face : faces) {
             Point center = new Point(face.x + face.width * 0.5, face.y + face.height * 0.5);
@@ -234,23 +231,21 @@ public class LetterThread implements Callable<LetterResult> {
     public BufferedImage getTresholdImage(BufferedImage buffImage){
         synchronized (syncObject) {
             BufferedImage tresholdedImage = null;
+            buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
+            Mat sourceMat = converter.BufferedToMat(buffImage);
+            Mat destinationMat = sourceMat;
+
+            Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_RGB2GRAY);
+
+            Imgproc.adaptiveThreshold(sourceMat, destinationMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 11, 5);
+            //Dokumentation zu adaptiveTreshold -  http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold
+
+            Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
+
+            tresholdedImage = converter.MatToBuffered(destinationMat);
+            tresholdedImage = swapBlackToRed(tresholdedImage);
+
             try {
-                buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
-                Mat sourceMat = converter.BufferedToMat(buffImage);
-                Mat destinationMat = new Mat(sourceMat.rows(), sourceMat.cols(), sourceMat.type());
-                destinationMat = sourceMat;
-
-                Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_RGB2GRAY);
-
-                Imgproc.adaptiveThreshold(sourceMat, destinationMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 11, 5);
-                //Dokumentation zu adaptiveTreshold -  http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold
-
-                Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
-
-                tresholdedImage = converter.MatToBuffered(destinationMat);
-
-                tresholdedImage = swapBlackToRed(tresholdedImage);
-
                 ImageIO.write(tresholdedImage, "jpg", new File(System.getProperty("user.dir") + "/tresholdTestOutput.jpg"));
 
             } catch (Exception e) {

@@ -35,7 +35,7 @@ $(function() {
 			imagesString += image.url + ";";
 		});
 
-		$('#progress-hint').text('Bilder werden übertragen');
+		$('#progress-hint').text('Bilder werden geladen');
 
 		var serverSocket = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/api/coolageSocket');
 

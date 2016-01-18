@@ -36,7 +36,7 @@ public class ImageProcessor {
 
     public void processImages(ArrayList<BufferedImage> buffImageList, String text) throws ExecutionException {
 
-        text = text.toUpperCase();
+        text = text.toUpperCase(new Locale("de_DE"));
         int glyphCounter = 0;
         boolean isFirstImage = true;
         Converter converter = new Converter();
