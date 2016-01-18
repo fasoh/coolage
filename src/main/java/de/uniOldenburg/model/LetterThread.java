@@ -141,7 +141,7 @@ public class LetterThread implements Callable<LetterResult> {
             FontRenderContext frc = letterImage.getFontRenderContext();
 
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
-            Rectangle2D glyphBox = glyphVector.getVisualBounds();
+            Rectangle2D glyphBox = glyphVector.getLogicalBounds();
             int xOff = (int) glyphBox.getX();
             int yOff = (int) -glyphBox.getY();
             Shape shape = glyphVector.getOutline(xOff + offsetX, yOff + offsetY);
