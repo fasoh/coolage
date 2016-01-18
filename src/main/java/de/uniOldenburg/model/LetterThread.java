@@ -74,7 +74,7 @@ public class LetterThread implements Callable<LetterResult> {
                 }
 
                 BestPositionResult bestPositionResult = getBestCoordinates(qualityAreas, accuracy, letter);
-                photoGlyph = this.getPhotoGlyph(photo, letter, scale, bestPositionResult.bestX, bestPositionResult.bestY);
+                photoGlyph = getPhotoGlyph(photo, letter, scale, bestPositionResult.bestX, bestPositionResult.bestY);
                 photoGlyph = cropImage(photoGlyph, margin);
                 result = new LetterResult(photoGlyph, letter, (index + 1), faces.length, bestPositionResult.bestQuality*100);
             }
@@ -129,9 +129,9 @@ public class LetterThread implements Callable<LetterResult> {
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
         synchronized (syncObject) {
             BufferedImage textImage;
-            if (letter == '\u00c4' || letter == '\u00d6' || letter == '\u00dc') { //ä,ö,ü
+            /*if (letter == '\u00c4' || letter == '\u00d6' || letter == '\u00dc') { //ä,ö,ü
                 letter = letter.toString().toLowerCase().charAt(0);
-            }
+            }*/
 
             int scaleX = (int) (buffImage.getWidth() * imageScale);
             int scaleY = (int) (buffImage.getHeight() * imageScale);

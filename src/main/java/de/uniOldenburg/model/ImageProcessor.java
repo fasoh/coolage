@@ -104,25 +104,49 @@ public class ImageProcessor {
     }
 
     public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor) throws IOException {
-        //Stitches images firstImage and secondImage together (which becomes the new firstImage for the next iteration)
         BufferedImage resultImage;
 
-        int newHeight;
-        if (secondImage.getHeight() > firstImage.getHeight()) {
-            newHeight = secondImage.getHeight();
-        } else {
-            newHeight = firstImage.getHeight();
+        if (firstImage.getHeight() != secondImage.getHeight()) {
+            int newWidth = (int)(((double)firstImage.getHeight()/(double)secondImage.getHeight())*(double)secondImage.getWidth());
+            secondImage = getScaledImage(secondImage, newWidth, firstImage.getHeight());
         }
 
         resultImage = new BufferedImage(firstImage.getWidth() +
-                secondImage.getWidth(), newHeight,
+                secondImage.getWidth(), firstImage.getHeight(),
                 BufferedImage.TYPE_INT_ARGB);
         Graphics g = resultImage.getGraphics();
         g.drawImage(firstImage, 0, 0, null);
-        g.drawImage(secondImage, firstImage.getWidth(), newHeight - secondImage.getHeight(), null);
+        g.drawImage(secondImage, firstImage.getWidth(), 0, null);
 
         resultImage = setBackgroundColor(resultImage, backgroundColor);
         return resultImage;
+    }
 
+    /**
+     * Resizes an image using a Graphics2D object backed by a BufferedImage.
+     * Source: http://stackoverflow.com/questions/16497853/scale-a-bufferedimage-the-fastest-and-easiest-way
+     * @param src - source image to scale
+     * @param w - desired width
+     * @param h - desired height
+     * @return - the new resized image
+     */
+    private BufferedImage getScaledImage(BufferedImage src, int w, int h){
+        int finalw = w;
+        int finalh = h;
+        double factor = 1.0d;
+        if(src.getWidth() > src.getHeight()){
+            factor = ((double)src.getHeight()/(double)src.getWidth());
+            finalh = (int)(finalw * factor);
+        }else{
+            factor = ((double)src.getWidth()/(double)src.getHeight());
+            finalw = (int)(finalh * factor);
+        }
+
+        BufferedImage resizedImg = new BufferedImage(finalw, finalh, BufferedImage.TRANSLUCENT);
+        Graphics2D g2 = resizedImg.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(src, 0, 0, finalw, finalh, null);
+        g2.dispose();
+        return resizedImg;
     }
 }
