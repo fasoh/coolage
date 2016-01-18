@@ -49,14 +49,9 @@ public class ImageProcessor {
         service = Executors.newFixedThreadPool(text.length()); //Max amount of threads working at the same time
 
         for (BufferedImage rawImage : buffImageList) {
-            if (glyphCounter == 0){
-                //Start thread without glyphCounter
-                tasks.add(service.submit(new LetterThread(rawImage, text, font, borderSize, borderColor, margin, progress)));
-            } else {
-                //Start thread with glyphCounter
-                tasks.add(service.submit(new LetterThread(rawImage, text, glyphCounter, font, borderSize, borderColor, margin, progress)));
-            }
 
+            // Start the thread
+            tasks.add(service.submit(new LetterThread(rawImage, text.charAt(glyphCounter), glyphCounter, font, borderSize, borderColor, margin, progress)));
             glyphCounter++;
         }
 

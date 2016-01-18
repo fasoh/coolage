@@ -8,25 +8,17 @@ import java.util.concurrent.Callable;
  */
 public class LetterResult {
 
-    public BufferedImage letterImage;
-    public char letter;
-    public int position;
-    public int numberOfFaces;
-    public double quality;
-    public Boolean isEmpty;
+    public final BufferedImage letterImage;
+    public final char letter;
+    public final int position;
+    public final int numberOfFaces;
+    public final double quality;
 
     public LetterResult(BufferedImage letterImage, char letter, int position, int numberOfFaces, double quality) {
-        this.isEmpty = false;
         this.letterImage = letterImage;
         this.letter = letter;
         this.position = position;
         this.numberOfFaces = numberOfFaces;
         this.quality = quality;
-    }
-
-    public LetterResult(BufferedImage letterImage, Boolean isEmpty, int position) {
-        this.letterImage = letterImage;
-        this.isEmpty = isEmpty;
-        this.position = position;
     }
 }
