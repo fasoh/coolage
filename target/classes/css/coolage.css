@@ -55,3 +55,7 @@
 :placeholder-shown {
     color: #e8e8e8;
 }
+
+#final-image {
+    width: 100%;
+}
