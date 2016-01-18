@@ -54,7 +54,7 @@ public class LetterThread implements Callable<LetterResult> {
 
             LetterResult result;
             double scale = 1;
-            int accuracy = 10; //Je höher, desto genauer
+            int accuracy = 5; //Je höher, desto genauer
             BufferedImage photoGlyph;
 
             if (letter == ' ') {
@@ -89,17 +89,16 @@ public class LetterThread implements Callable<LetterResult> {
             double bestQuality = 0;
             int bestX = 0;
             int bestY = 0;
-            int letterMargin = 9; //TODO Durch Testen herausgefunden, evtl. falsch/variabel
-            int letterSize = getFontWidth(font, String.valueOf(character)); //TODO mit diesen Werten von Anfang an feststellen ob ein Bild zu klein ist oder nicht
+            int[] dimensions = getFontDimensions(font, String.valueOf(character)); //TODO mit diesen Werten von Anfang an feststellen ob ein Bild zu klein ist oder nicht
 
-            int accuracyX = buffImage.getWidth() / accuracyTiles;
-            int accuracyY = buffImage.getHeight() / accuracyTiles;
+            int accuracyX = (buffImage.getWidth()-dimensions[0]) / accuracyTiles;
+            int accuracyY = (buffImage.getHeight()-dimensions[1]) / accuracyTiles;
 
             outerloop:
-            for (int x = letterMargin; x < (buffImage.getWidth()-letterSize-letterMargin); x += accuracyX) {
-                for (int y = 0; y < (buffImage.getHeight()-letterSize-letterMargin); y += accuracyY) { //TODO rausfinden warum man bei y auch WIDTH abzieht und nicht height (völlig falsche werte bei height, width-wert stimmt immer exakt)
+            for (int x = 0; x <= (buffImage.getWidth()-dimensions[0]); x += accuracyX) {
+                for (int y = 0; y <= (buffImage.getHeight()-dimensions[1]); y += accuracyY) {
                     double newQuality = getQualityOfPosition(buffImage, letter, 1, x, y);
-                    if (newQuality != 0 && newQuality > bestQuality) {
+                    if (newQuality > bestQuality) {
                         bestQuality = newQuality;
                         bestX = x;
                         bestY = y;
@@ -114,12 +113,17 @@ public class LetterThread implements Callable<LetterResult> {
         }
     }
 
-    public int getFontWidth(Font font, String letter){
+    public int[] getFontDimensions(Font font, String letter){
         AffineTransform affinetransform = new AffineTransform();
         FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
-        int textwidth = (int)(font.getStringBounds(letter, frc).getWidth());
 
-        return textwidth;
+        Rectangle2D stringBounds = font.getStringBounds(letter, frc);
+
+        int textWidth = (int)stringBounds.getWidth();
+        int textHeight = (int)stringBounds.getWidth();
+        int[] dimensions = {textWidth, textHeight};
+
+        return dimensions;
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
