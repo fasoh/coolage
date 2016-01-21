@@ -23,6 +23,7 @@ public class ImageProcessor {
     private int margin;
     private BufferedImage finalImage = null;
     private Session session;
+    private Converter converter = new Converter();
 
     public ImageProcessor(String fontFace, float fontSize, Color backgroundColor, float borderSize, Color borderColor, int margin, Session session) {
         ResourceLoader resourceLoader = new ResourceLoader();
@@ -39,7 +40,6 @@ public class ImageProcessor {
         text = text.toUpperCase(new Locale("de_DE"));
         int glyphCounter = 0;
         boolean isFirstImage = true;
-        Converter converter = new Converter();
 
         ProgressListener progress = new ProgressListener(text, session);
 
@@ -108,7 +108,7 @@ public class ImageProcessor {
 
         if (firstImage.getHeight() != secondImage.getHeight()) {
             int newWidth = (int)(((double)firstImage.getHeight()/(double)secondImage.getHeight())*(double)secondImage.getWidth());
-            secondImage = getScaledImage(secondImage, newWidth, firstImage.getHeight());
+            secondImage = converter.getScaledImage(secondImage, newWidth, firstImage.getHeight());
         }
 
         resultImage = new BufferedImage(firstImage.getWidth() +
@@ -120,33 +120,5 @@ public class ImageProcessor {
 
         resultImage = setBackgroundColor(resultImage, backgroundColor);
         return resultImage;
-    }
-
-    /**
-     * Resizes an image using a Graphics2D object backed by a BufferedImage.
-     * Source: http://stackoverflow.com/questions/16497853/scale-a-bufferedimage-the-fastest-and-easiest-way
-     * @param src - source image to scale
-     * @param w - desired width
-     * @param h - desired height
-     * @return - the new resized image
-     */
-    private BufferedImage getScaledImage(BufferedImage src, int w, int h){
-        int finalw = w;
-        int finalh = h;
-        double factor = 1.0d;
-        if(src.getWidth() > src.getHeight()){
-            factor = ((double)src.getHeight()/(double)src.getWidth());
-            finalh = (int)(finalw * factor);
-        }else{
-            factor = ((double)src.getWidth()/(double)src.getHeight());
-            finalw = (int)(finalh * factor);
-        }
-
-        BufferedImage resizedImg = new BufferedImage(finalw, finalh, BufferedImage.TRANSLUCENT);
-        Graphics2D g2 = resizedImg.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2.drawImage(src, 0, 0, finalw, finalh, null);
-        g2.dispose();
-        return resizedImg;
     }
 }

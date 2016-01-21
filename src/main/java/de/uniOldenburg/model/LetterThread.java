@@ -5,6 +5,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 import java.awt.*;
+
 import org.opencv.core.Point;
 
 import javax.imageio.ImageIO;
@@ -53,8 +54,7 @@ public class LetterThread implements Callable<LetterResult> {
         synchronized (syncObject) {
 
             LetterResult result;
-            double scale = 1;
-            int accuracy = 5; //Je höher, desto genauer
+            int accuracy = 10; //Je höher, desto genauer
             BufferedImage photoGlyph;
 
             if (letter == ' ') {
@@ -74,9 +74,9 @@ public class LetterThread implements Callable<LetterResult> {
                 }
 
                 BestPositionResult bestPositionResult = getBestCoordinates(qualityAreas, accuracy, letter);
-                photoGlyph = getPhotoGlyph(photo, letter, scale, bestPositionResult.bestX, bestPositionResult.bestY);
+                photoGlyph = getPhotoGlyph(photo, letter, bestPositionResult.scale, bestPositionResult.bestX, bestPositionResult.bestY);
                 photoGlyph = cropImage(photoGlyph, margin);
-                result = new LetterResult(photoGlyph, letter, (index + 1), faces.length, bestPositionResult.bestQuality*100);
+                result = new LetterResult(photoGlyph, letter, (index + 1), faces.length, bestPositionResult.bestQuality * 100);
             }
 
             progress.letterFinished(result);
@@ -84,89 +84,106 @@ public class LetterThread implements Callable<LetterResult> {
         }
     }
 
-    public BestPositionResult getBestCoordinates(BufferedImage buffImage, int accuracyTiles, char character){
+    public BestPositionResult getBestCoordinates(BufferedImage qualityImage, int accuracyTiles, char character) {
         synchronized (syncObject) {
             double bestQuality = 0;
             int bestX = 0;
             int bestY = 0;
-            int[] dimensions = getFontDimensions(font, String.valueOf(character)); //TODO mit diesen Werten von Anfang an feststellen ob ein Bild zu klein ist oder nicht
+            double scale;
 
-            int accuracyX = (buffImage.getWidth()-dimensions[0]) / accuracyTiles;
-            int accuracyY = (buffImage.getHeight()-dimensions[1]) / accuracyTiles;
+            int[] dimensions = getFontDimensions(font, String.valueOf(character));
 
-            outerloop:
-            for (int x = 0; x <= (buffImage.getWidth()-dimensions[0]); x += accuracyX) {
-                for (int y = 0; y <= (buffImage.getHeight()-dimensions[1]); y += accuracyY) {
-                    double newQuality = getQualityOfPosition(buffImage, letter, 1, x, y);
+            int accuracyX = (qualityImage.getWidth() - dimensions[0]) / accuracyTiles;
+            int accuracyY = (qualityImage.getHeight() - dimensions[1]) / accuracyTiles;
+
+            double buffRatio = (double)qualityImage.getHeight() / (double)qualityImage.getWidth();
+            double letterRatio = (double)dimensions[1] / (double)dimensions[0];
+
+            if (buffRatio > letterRatio) {
+
+                scale = (double)qualityImage.getWidth() / (double)dimensions[0];
+
+                for (int y = 0; y <= (qualityImage.getHeight() - dimensions[1]); y += accuracyY) {
+                    double newQuality = getQualityOfPosition(qualityImage, letter, scale, 0, y);
+                    if (newQuality > bestQuality) {
+                        bestQuality = newQuality;
+                        bestY = y;
+                    }
+                    if (newQuality == 1.0) {
+                        break;
+                    }
+                }
+            } else {
+
+                scale = (double) qualityImage.getHeight() / (double) dimensions[1];
+
+                for (int x = 0; x <= (qualityImage.getWidth() - dimensions[0]); x += accuracyX) {
+                    double newQuality = getQualityOfPosition(qualityImage, letter, scale, x, 0);
                     if (newQuality > bestQuality) {
                         bestQuality = newQuality;
                         bestX = x;
-                        bestY = y;
                     }
-                    if (newQuality == 1.0){
-                        break outerloop;
+                    if (newQuality == 1.0) {
+                        break;
                     }
                 }
             }
 
-            return new BestPositionResult(bestX, bestY, bestQuality);
+            return new BestPositionResult(bestX, bestY, scale, bestQuality);
         }
     }
 
-    public int[] getFontDimensions(Font font, String letter){
-        AffineTransform affinetransform = new AffineTransform();
-        FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
+    public int[] getFontDimensions(Font font, String letter) {
 
-        Rectangle2D stringBounds = font.getStringBounds(letter, frc);
+        Graphics2D canvas = photo.createGraphics();
+        FontRenderContext frc = canvas.getFontRenderContext();
 
-        int textWidth = (int)stringBounds.getWidth();
-        int textHeight = (int)stringBounds.getWidth();
-        int[] dimensions = {textWidth, textHeight};
+        GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
+        Rectangle2D glyphBox = glyphVector.getVisualBounds();
+        int[] dimensions = {(int)glyphBox.getWidth(), (int)glyphBox.getHeight()};
 
         return dimensions;
     }
 
     public BufferedImage getPhotoGlyph(BufferedImage buffImage, Character letter, double imageScale, int offsetX, int offsetY) {
         synchronized (syncObject) {
-            BufferedImage textImage;
-            /*if (letter == '\u00c4' || letter == '\u00d6' || letter == '\u00dc') { //ä,ö,ü
-                letter = letter.toString().toLowerCase().charAt(0);
-            }*/
 
-            int scaleX = (int) (buffImage.getWidth() * imageScale);
-            int scaleY = (int) (buffImage.getHeight() * imageScale);
+            // Makes sure border is visible
+            imageScale = imageScale*0.99;
 
-            textImage = new BufferedImage(scaleX, scaleY, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D letterImage = textImage.createGraphics();
-            FontRenderContext frc = letterImage.getFontRenderContext();
+            BufferedImage finalImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+            Graphics2D canvas = finalImage.createGraphics();
+            FontRenderContext frc = canvas.getFontRenderContext();
 
             GlyphVector glyphVector = font.createGlyphVector(frc, letter.toString());
-            Rectangle2D glyphBox = glyphVector.getLogicalBounds();
-            int xOff = (int) glyphBox.getX();
-            int yOff = (int) -glyphBox.getY();
+            Rectangle2D glyphBox = glyphVector.getVisualBounds();
+
+            AffineTransform scaling = new AffineTransform();
+            scaling.scale(imageScale, imageScale);
+            glyphVector.setGlyphTransform(0, scaling);
+
+            int xOff = (int) (-glyphBox.getX()*imageScale);
+            int yOff = (int) (-glyphBox.getY()*imageScale);
             Shape shape = glyphVector.getOutline(xOff + offsetX, yOff + offsetY);
 
-            letterImage.setClip(shape); // Deactivate to see letter position in image
+            canvas.setClip(shape); // Deactivate to see letter position in image
+            canvas.drawImage(buffImage, 0, 0, null);
 
-            Image scaledImage = buffImage.getScaledInstance(scaleX, scaleY, 1);
+            canvas.setClip(null);
+            canvas.setStroke(new BasicStroke(borderSize));
+            canvas.setColor(borderColor);
+            canvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            canvas.draw(shape);
+            canvas.dispose();
 
-            letterImage.drawImage(scaledImage, 0, 0, null);
-            letterImage.setClip(null);
-
-            letterImage.setStroke(new BasicStroke(borderSize));
-            letterImage.setColor(borderColor);
-            letterImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            letterImage.draw(shape);
-
-            letterImage.dispose();
-
-            return textImage;
+            return finalImage;
         }
     }
 
     private BufferedImage drawFaces(Rect[] faces, int canvasWidth, int canvasHeight) {
         BufferedImage canvas;
-        Mat tempMat = new Mat(canvasWidth, canvasHeight, CvType.CV_8UC3, new Scalar(255, 255, 255));
+        Mat tempMat = new Mat(canvasHeight, canvasWidth, CvType.CV_8UC3, new Scalar(255, 255, 255));
 
         for (Rect face : faces) {
             Point center = new Point(face.x + face.width * 0.5, face.y + face.height * 0.5);
@@ -176,7 +193,7 @@ public class LetterThread implements Callable<LetterResult> {
         canvas = converter.MatToBuffered(tempMat);
 
         try {
-            ImageIO.write(canvas, "jpg", new File(System.getProperty("user.dir") + "/faceDetectionTestOutput.jpg"));
+            ImageIO.write(canvas, "png", new File(System.getProperty("user.dir") + "/faceDetectionTestOutput.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -186,7 +203,6 @@ public class LetterThread implements Callable<LetterResult> {
 
     private double getQualityOfPosition(BufferedImage qualityImage, char letter, double imageScale, int offsetX, int offsetY) {
         synchronized (syncObject) {
-
             BufferedImage croppedQualityAreas = getPhotoGlyph(qualityImage, letter, imageScale, offsetX, offsetY);
             return (countQualityPixels(croppedQualityAreas) / countQualityPixels(qualityImage));
         }
@@ -194,10 +210,11 @@ public class LetterThread implements Callable<LetterResult> {
 
     /**
      * Counts the number of red pixels in a given image
+     *
      * @param qualityAreas Quality Image
      * @return number of black pixels
      */
-    private double countQualityPixels (BufferedImage qualityAreas) {
+    private double countQualityPixels(BufferedImage qualityAreas) {
         synchronized (syncObject) {
             int photoWidth = qualityAreas.getWidth();
             int photoHeight = qualityAreas.getHeight();
@@ -214,8 +231,8 @@ public class LetterThread implements Callable<LetterResult> {
         }
     }
 
-    private BufferedImage swapBlackToRed(BufferedImage inputImage){
-        synchronized (syncObject){
+    private BufferedImage swapBlackToRed(BufferedImage inputImage) {
+        synchronized (syncObject) {
             int photoWidth = inputImage.getWidth();
             int photoHeight = inputImage.getHeight();
             //rot 0xFFFF0000
@@ -232,7 +249,7 @@ public class LetterThread implements Callable<LetterResult> {
         }
     }
 
-    public BufferedImage getTresholdImage(BufferedImage buffImage){
+    public BufferedImage getTresholdImage(BufferedImage buffImage) {
         synchronized (syncObject) {
             BufferedImage tresholdedImage = null;
             buffImage = converter.toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
@@ -271,10 +288,11 @@ public class LetterThread implements Callable<LetterResult> {
         }
     }
 
-    /** Crops the parts of an image that have the same color as the top left pixel
+    /**
+     * Crops the parts of an image that have the same color as the top left pixel
      * The algorithm checks the image pixel by pixel. It stops when the current pixel does NOT equal the top left pixel
      * Therefore it draws a rectangle over the letter
-     * */
+     */
     public BufferedImage cropImage(BufferedImage source, int margin) {
         synchronized (syncObject) {
             int width = source.getWidth();

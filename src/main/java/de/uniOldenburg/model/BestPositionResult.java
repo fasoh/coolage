@@ -6,11 +6,13 @@ package de.uniOldenburg.model;
 public class BestPositionResult {
     public final int bestX;
     public final int bestY;
+    public final double scale;
     public final double bestQuality;
 
-    public BestPositionResult(int bestX, int bestY, double bestQuality) {
+    public BestPositionResult(int bestX, int bestY, double scale, double bestQuality) {
         this.bestX = bestX;
         this.bestY = bestY;
+        this.scale = scale;
         this.bestQuality = bestQuality;
     }
 }
