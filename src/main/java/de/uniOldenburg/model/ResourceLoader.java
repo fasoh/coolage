@@ -17,12 +17,12 @@ public class ResourceLoader {
 
     Converter convert = new Converter();
 
-    public ArrayList<BufferedImage> getImages(String text, ArrayList<String> urlList, Dimension boundary){
+    public ArrayList<BufferedImage> getImages(String text, ArrayList<String> urlList){
         ArrayList<BufferedImage> buffImageList = new ArrayList<BufferedImage>();
 
         if (text.length() > urlList.size()){
             System.out.println("Filling up imageList (text > imageList.size())");
-            downloadImagesFromListAsBuffered(buffImageList, urlList, boundary);
+            downloadImagesFromListAsBuffered(buffImageList, urlList);
             int j = 0;
             for (int i = urlList.size(); i < text.length(); i++){
                 buffImageList.add(buffImageList.get(j));
@@ -33,21 +33,17 @@ public class ResourceLoader {
             for (int i = urlList.size(); i > text.length(); i--){
                 urlList.remove(urlList.size() - 1);
             }
-            downloadImagesFromListAsBuffered(buffImageList, urlList, boundary);
+            downloadImagesFromListAsBuffered(buffImageList, urlList);
         }
 
         return buffImageList;
     }
 
-    public ArrayList<BufferedImage> downloadImagesFromListAsBuffered(ArrayList<BufferedImage> buffImageList, ArrayList<String> urlList, Dimension boundary){
-        int outputCounter = 1;
+    public ArrayList<BufferedImage> downloadImagesFromListAsBuffered(ArrayList<BufferedImage> buffImageList, ArrayList<String> urlList){
         for (String url : urlList){
-            System.out.print("Picture #" + outputCounter + " ");
-            BufferedImage buffImage = this.getImage(url, boundary);
+            BufferedImage buffImage = this.getImage(url);
             buffImageList.add(buffImage);
-            outputCounter++;
         }
-        System.out.println();
         return buffImageList;
     }
 
@@ -93,7 +89,7 @@ public class ResourceLoader {
         return customFont;
     }
 
-    public BufferedImage getImage(String url, Dimension boundary) {
+    public BufferedImage getImage(String url) {
 
         BufferedImage image = null;
         String fileName = url.split("/")[url.split("/").length-1];
@@ -101,52 +97,16 @@ public class ResourceLoader {
         // Try finding local image – else download from source
         try {
             image = this.imageFromURL("file://" + System.getProperty("user.dir") + "/src/main/cache/" + fileName);
-            System.out.print("cached - ");
         } catch (IOException e) {
 
             try {
                 image = this.imageFromURL(url);
                 ImageIO.write(image, "jpg", new File(System.getProperty("user.dir") + "/src/main/cache/" + fileName));
-                System.out.print("downloaded - ");
             } catch (IOException f) {
                 f.printStackTrace();
             }
         }
-
-        Dimension newDimension = getScaledDimension(new Dimension(image.getWidth(), image.getHeight()), boundary);
-        BufferedImage scaledImage = resizeImage(image, newDimension.width, newDimension.height);
-
-        System.out.println("original width: " + image.getWidth() + ", scaled to width: " + scaledImage.getWidth() + "; original height: " + image.getHeight() + ", scaled to height: " + scaledImage.getHeight());
-
-        return scaledImage;
-    }
-
-    public static Dimension getScaledDimension(Dimension imgSize, Dimension boundary) {
-
-        int original_width = imgSize.width;
-        int original_height = imgSize.height;
-        int bound_width = boundary.width;
-        int bound_height = boundary.height;
-        int new_width = original_width;
-        int new_height = original_height;
-
-        // first check if we need to scale width
-        if (original_width > bound_width) {
-            //scale width to fit
-            new_width = bound_width;
-            //scale height to maintain aspect ratio
-            new_height = (new_width * original_height) / original_width;
-        }
-
-        // then check if we need to scale even with the new height
-        if (new_height > bound_height) {
-            //scale height to fit instead
-            new_height = bound_height;
-            //scale width to maintain aspect ratio
-            new_width = (new_height * original_width) / original_height;
-        }
-
-        return new Dimension(new_width, new_height);
+        return image;
     }
 
     private BufferedImage resizeImage(BufferedImage originalImage, int biggerWidth, int biggerHeight) {
