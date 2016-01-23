@@ -41,6 +41,10 @@ $(function() {
 
 		serverSocket.onopen = function() {
 
+			$('#coolage-progress').width('0%');
+			// Animate progress start
+			$('#coolage-progress').width('5%');
+
 			serverSocket.send(JSON.stringify({
 				images: imagesString,
 				text: $('#coolageText').val()
@@ -62,6 +66,7 @@ $(function() {
 				$('#final-image').show();
 				$('#cancel').hide();
 				$('#done').show();
+				$('#coolage-progress').width('0%');
 			}
 		};
 

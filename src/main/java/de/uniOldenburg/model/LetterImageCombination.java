@@ -15,7 +15,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-
 public class LetterImageCombination {
 
     private BufferedImage photo;
@@ -98,9 +97,7 @@ public class LetterImageCombination {
                     bestQuality = newQuality;
                     bestY = y;
                 }
-                if (newQuality == 1.0) {
-                    break;
-                }
+                if (newQuality == 1.0) break;
             }
         } else {
 
