@@ -34,7 +34,7 @@ public class CoolageSocketListener {
             String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
             //TODO Für leerzeichen muss das bild nicht geladen werden (im converter) (bsp "a b c" lädt 5 bilder runter, nicht 3)
             ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15, session);
-            imageProcessor.processImages(resourceLoader.getImages(text, urlList), text);
+            imageProcessor.processImages(resourceLoader.getFittedImagesSources(text, urlList), text);
 
             System.out.println("Done!");
         }

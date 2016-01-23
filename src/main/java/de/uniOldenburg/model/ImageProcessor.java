@@ -37,19 +37,20 @@ public class ImageProcessor {
         this.session = session;
     }
 
-    public void processImages(ArrayList<BufferedImage> buffImageList, String text) {
+    public void processImages(ArrayList<String> urlList, String text) {
 
         text = text.toUpperCase(new Locale("de_DE"));
         ProgressListener progress = new ProgressListener(text, session);
+        LetterImageCombinationCache cache = new LetterImageCombinationCache();
 
         for (int glyphCounter = 0; glyphCounter < text.length(); glyphCounter++) {
 
-            Letter letter = new Letter(buffImageList, text.charAt(glyphCounter), glyphCounter, font, borderSize, borderColor, margin);
+            Letter letter = new Letter(urlList, text.charAt(glyphCounter), glyphCounter, font, borderSize, borderColor, margin, cache);
             LetterResult letterResult = letter.getOptimalLetter();
             BufferedImage bufferedImage = letterResult.letterImage;
             progress.letterFinished(letterResult, glyphCounter);
 
-            buffImageList.remove(letterResult.bestIndex);
+            urlList.remove(letterResult.bestIndex);
 
             if (glyphCounter == 0){
 

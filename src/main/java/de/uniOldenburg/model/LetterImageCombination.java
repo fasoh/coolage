@@ -17,20 +17,23 @@ import java.io.IOException;
 
 public class LetterImageCombination {
 
-    private BufferedImage photo;
-    private char letter;
-    private Font font;
-    private float borderSize;
-    private Color borderColor;
-    private int margin;
-    Converter converter = new Converter();
+    public final String photoUrl;
+    public final BufferedImage photo;
+    public final char letter;
+    public final Font font;
+    public final float borderSize;
+    public final Color borderColor;
+    public final int margin;
+    private Converter converter = new Converter();
+    private ResourceLoader loader = new ResourceLoader();
 
     /**
      * Konstruktor für alle Bilder nach dem ersten (die zum vorherigen gestitched werden sollen)
      */
-    public LetterImageCombination(BufferedImage photo, char letter, Font font, float borderSize, Color borderColor, int margin) {
+    public LetterImageCombination(String photoUrl, char letter, Font font, float borderSize, Color borderColor, int margin) {
 
-        this.photo = photo;
+        this.photo = loader.getImage(photoUrl);
+        this.photoUrl = photoUrl;
         this.letter = letter;
         this.font = font;
         this.borderSize = borderSize;

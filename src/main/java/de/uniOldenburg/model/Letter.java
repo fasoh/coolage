@@ -9,16 +9,17 @@ import java.util.ArrayList;
  */
 public class Letter {
 
-    private final ArrayList<BufferedImage> photoOptions;
+    private final ArrayList<String> photoOptions;
     private final char letter;
     private final int index;
     private final Font font;
     private final float borderSize;
     private final Color borderColor;
     private final int margin;
+    private final LetterImageCombinationCache cache;
 
 
-    public Letter(ArrayList<BufferedImage> photoOptions, char letter, int index, Font font, float borderSize, Color borderColor, int margin) {
+    public Letter(ArrayList<String> photoOptions, char letter, int index, Font font, float borderSize, Color borderColor, int margin, LetterImageCombinationCache cache) {
 
         this.photoOptions = photoOptions;
         this.letter = letter;
@@ -27,6 +28,7 @@ public class Letter {
         this.borderSize = borderSize;
         this.borderColor = borderColor;
         this.margin = margin;
+        this.cache = cache;
     }
 
     public LetterResult getOptimalLetter() {
@@ -37,12 +39,12 @@ public class Letter {
         double bestQuality = 0;
 
         if (letter == ' ') {
-            return new LetterResult(new BufferedImage(150, 600, BufferedImage.TYPE_INT_ARGB), ' ', 0, 0);
+            return new LetterResult(new BufferedImage(200, 600, BufferedImage.TYPE_INT_ARGB), ' ', 0, 0);
         }
 
         for (int photoIndex = 0; photoIndex < photoOptions.size(); photoIndex++) {
             letterImageCombination = new LetterImageCombination(photoOptions.get(photoIndex), letter, font, borderSize, borderColor, margin);
-            letterResult = letterImageCombination.getOptimalPosition();
+            letterResult = cache.getLetterResult(letterImageCombination);
 
             if (letterResult.quality > bestQuality) {
                 bestCombination = letterResult;

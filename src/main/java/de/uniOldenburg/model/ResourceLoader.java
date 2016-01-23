@@ -17,14 +17,33 @@ public class ResourceLoader {
 
     Converter convert = new Converter();
 
-    public ArrayList<BufferedImage> getImages(String text, ArrayList<String> urlList){
+    public ArrayList<String> getFittedImagesSources(String text, ArrayList<String> urlList) {
+        if (text.length() > urlList.size()){
+            System.out.println("Filling up imageList (text > imageList.size())");
+            int j = 0;
+            for (int i = urlList.size(); i < text.length(); i++) {
+                urlList.add(urlList.get(j));
+                j++;
+            }
+        } else { //Trims rawImageList to size of text if there are more images than text
+            System.out.println("Trimming imageList (text < imageList.size())");
+            for (int i = urlList.size(); i > text.length(); i--){
+                urlList.remove(urlList.size() - 1);
+            }
+        }
+        return urlList;
+    }
+
+    /*
+
+    public ArrayList<BufferedImage> getImages(String text, ArrayList<String> urlList) {
         ArrayList<BufferedImage> buffImageList = new ArrayList<BufferedImage>();
 
         if (text.length() > urlList.size()){
             System.out.println("Filling up imageList (text > imageList.size())");
-            downloadImagesFromListAsBuffered(buffImageList, urlList);
+            loadImagesFromListAsBuffered(buffImageList, urlList);
             int j = 0;
-            for (int i = urlList.size(); i < text.length(); i++){
+            for (int i = urlList.size(); i < text.length(); i++) {
                 buffImageList.add(buffImageList.get(j));
                 j++;
             }
@@ -33,19 +52,21 @@ public class ResourceLoader {
             for (int i = urlList.size(); i > text.length(); i--){
                 urlList.remove(urlList.size() - 1);
             }
-            downloadImagesFromListAsBuffered(buffImageList, urlList);
+            loadImagesFromListAsBuffered(buffImageList, urlList);
         }
 
         return buffImageList;
     }
 
-    public ArrayList<BufferedImage> downloadImagesFromListAsBuffered(ArrayList<BufferedImage> buffImageList, ArrayList<String> urlList){
-        for (String url : urlList){
-            BufferedImage buffImage = this.getImage(url);
+    public ArrayList<BufferedImage> loadImagesFromListAsBuffered(ArrayList<BufferedImage> buffImageList, ArrayList<String> urlList) {
+        for (String url : urlList) {
+            BufferedImage buffImage = getImage(url);
             buffImageList.add(buffImage);
         }
         return buffImageList;
     }
+
+    */
 
     public Font customFontFromFile(String fontName, float fontSize) throws FileNotFoundException {
         Font customFont = null;
@@ -107,23 +128,6 @@ public class ResourceLoader {
             }
         }
         return image;
-    }
-
-    private BufferedImage resizeImage(BufferedImage originalImage, int biggerWidth, int biggerHeight) {
-        int type = BufferedImage.TYPE_INT_ARGB;
-
-        BufferedImage resizedImage = new BufferedImage(biggerWidth, biggerHeight, type);
-        Graphics2D g = resizedImage.createGraphics();
-
-        g.setComposite(AlphaComposite.Src);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g.drawImage(originalImage, 0, 0, biggerWidth, biggerHeight, null);
-        g.dispose();
-
-        return resizedImage;
     }
 
     public BufferedImage imageFromURL(String urlString) throws IOException {
