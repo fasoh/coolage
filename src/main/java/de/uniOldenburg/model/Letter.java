@@ -36,6 +36,10 @@ public class Letter {
         LetterResult letterResult;
         double bestQuality = 0;
 
+        if (letter == ' ') {
+            return new LetterResult(new BufferedImage(150, 600, BufferedImage.TYPE_INT_ARGB), ' ', 0, 0);
+        }
+
         for (int photoIndex = 0; photoIndex < photoOptions.size(); photoIndex++) {
             letterImageCombination = new LetterImageCombination(photoOptions.get(photoIndex), letter, font, borderSize, borderColor, margin);
             letterResult = letterImageCombination.getOptimalPosition();

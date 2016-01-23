@@ -47,27 +47,21 @@ public class LetterImageCombination {
         int accuracy = 10; //Je höher, desto genauer
         BufferedImage photoGlyph;
 
-        if (letter == ' ') {
-            photoGlyph = new BufferedImage(150, 1, BufferedImage.TYPE_INT_ARGB); // Create new image for empty space in text (width, height)
-            result = new LetterResult(photoGlyph, ' ', 0, 0);
+        Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(photo, BufferedImage.TYPE_3BYTE_BGR));
+        Rect[] faces = converter.detectFaces(tempMat);
 
+        BufferedImage qualityAreas;
+
+        if (faces.length == 0) {
+            qualityAreas = converter.swapBlackToRed(converter.getTresholdImage(photo));
         } else {
-            Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(photo, BufferedImage.TYPE_3BYTE_BGR));
-            Rect[] faces = converter.detectFaces(tempMat);
-
-            BufferedImage qualityAreas;
-
-            if (faces.length == 0) {
-                qualityAreas = converter.swapBlackToRed(converter.getTresholdImage(photo));
-            } else {
-                qualityAreas = drawFaces(faces, photo.getWidth(), photo.getHeight());
-            }
-
-            BestPositionResult bestPositionResult = getBestCoordinates(qualityAreas, accuracy, letter);
-            photoGlyph = getPhotoGlyph(photo, letter, bestPositionResult.scale, bestPositionResult.bestX, bestPositionResult.bestY);
-            photoGlyph = cropImage(photoGlyph, margin);
-            result = new LetterResult(photoGlyph, letter, faces.length, bestPositionResult.bestQuality * 100);
+            qualityAreas = drawFaces(faces, photo.getWidth(), photo.getHeight());
         }
+
+        BestPositionResult bestPositionResult = getBestCoordinates(qualityAreas, accuracy, letter);
+        photoGlyph = getPhotoGlyph(photo, letter, bestPositionResult.scale, bestPositionResult.bestX, bestPositionResult.bestY);
+        photoGlyph = cropImage(photoGlyph, margin);
+        result = new LetterResult(photoGlyph, letter, faces.length, bestPositionResult.bestQuality * 100);
 
         return result;
     }
