@@ -3,8 +3,10 @@ package de.uniOldenburg.model;
 import org.eclipse.jetty.websocket.api.Session;
 import org.opencv.core.Core;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -35,90 +37,34 @@ public class ImageProcessor {
         this.session = session;
     }
 
-    public void processImages(ArrayList<BufferedImage> buffImageList, String text) throws ExecutionException {
+    public void processImages(ArrayList<BufferedImage> buffImageList, String text) {
 
         text = text.toUpperCase(new Locale("de_DE"));
-        int glyphCounter = 0;
-        boolean isFirstImage = true;
-
         ProgressListener progress = new ProgressListener(text, session);
 
-        //for threadHandling with Callable
-        final ExecutorService service;
-        List<Future<LetterResult>> tasks = new ArrayList<Future<LetterResult>>();
-        service = Executors.newFixedThreadPool(text.length()); //Max amount of threads working at the same time
+        for (int glyphCounter = 0; glyphCounter < text.length(); glyphCounter++) {
 
-        for (BufferedImage rawImage : buffImageList) {
+            Letter letter = new Letter(buffImageList, text.charAt(glyphCounter), glyphCounter, font, borderSize, borderColor, margin);
+            LetterResult letterResult = letter.getOptimalLetter();
+            BufferedImage bufferedImage = letterResult.letterImage;
+            progress.letterFinished(letterResult, glyphCounter);
 
-            // Start the thread
-            tasks.add(service.submit(new LetterThread(rawImage, text.charAt(glyphCounter), glyphCounter, font, borderSize, borderColor, margin, progress)));
-            glyphCounter++;
-        }
+            buffImageList.remove(letterResult.bestIndex);
 
-        for (Future<LetterResult> task : tasks){
-            try {
-                BufferedImage bufferedImage = task.get().letterImage;
+            if (glyphCounter == 0){
 
-                if (isFirstImage){
-                    bufferedImage = setBackgroundColor(bufferedImage, backgroundColor);
-                    saveImage(bufferedImage);
-                    isFirstImage = false;
-                    glyphCounter++;
-                } else {
-                    try {
-                        finalImage = stitchImages(finalImage, bufferedImage, backgroundColor);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                bufferedImage = converter.setBackgroundColor(bufferedImage, backgroundColor);
+                finalImage = bufferedImage;
+            } else {
+                try {
+                    finalImage = converter.stitchImages(finalImage, bufferedImage, backgroundColor);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (final InterruptedException ex) {
-                ex.printStackTrace();
-            } catch (final ExecutionException ex) {
-                ex.printStackTrace();
             }
         }
 
-        service.shutdownNow();
-        String url = converter.saveBuffImgAsPNG(finalImage);
+        String url = converter.saveFinalImgAsPNG(finalImage);
         progress.sendFinalImage(url);
-    }
-
-    public void saveImage(BufferedImage bufferedImage){
-        this.finalImage = bufferedImage;
-    }
-
-    public BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
-
-        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
-        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D graphics = backgroundLayer.createGraphics();
-        graphics.setPaint(backgroundColor);
-        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
-
-        Graphics g = newBuffImage.getGraphics();
-        g.drawImage(backgroundLayer, 0, 0, null);
-        g.drawImage(buffImage, 0, 0, null);
-
-        return newBuffImage;
-    }
-
-    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor) throws IOException {
-        BufferedImage resultImage;
-
-        if (firstImage.getHeight() != secondImage.getHeight()) {
-            int newWidth = (int)(((double)firstImage.getHeight()/(double)secondImage.getHeight())*(double)secondImage.getWidth());
-            secondImage = converter.getScaledImage(secondImage, newWidth, firstImage.getHeight());
-        }
-
-        resultImage = new BufferedImage(firstImage.getWidth() +
-                secondImage.getWidth(), firstImage.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
-        Graphics g = resultImage.getGraphics();
-        g.drawImage(firstImage, 0, 0, null);
-        g.drawImage(secondImage, firstImage.getWidth(), 0, null);
-
-        resultImage = setBackgroundColor(resultImage, backgroundColor);
-        return resultImage;
     }
 }

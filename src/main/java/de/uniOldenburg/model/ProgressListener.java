@@ -24,7 +24,7 @@ public class ProgressListener {
         sendStatusToClient(status);
     }
 
-    public void letterFinished(LetterResult letterResult) {
+    public void letterFinished(LetterResult letterResult, int position) {
 
         this.countFinished++;
         double percentage = (double)countFinished/(double)text.length()*100;
@@ -32,7 +32,7 @@ public class ProgressListener {
         JSONObject status = new JSONObject();
         status.put("percentage", percentage);
         status.put("task", "Buchstabe " + letterResult.letter +
-                " an Position " + letterResult.position +
+                " an Position " + (position+1) +
                 " enthält " + letterResult.numberOfFaces + " Gesicht(er)" +
                 " und hat eine Qualität von " + (int)letterResult.quality + ".");
 

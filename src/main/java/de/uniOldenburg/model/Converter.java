@@ -2,6 +2,10 @@ package de.uniOldenburg.model;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -12,7 +16,7 @@ import java.io.IOException;
 
 public class Converter {
 
-    public String saveBuffImgAsPNG(BufferedImage buffImage) {
+    public String saveFinalImgAsPNG(BufferedImage buffImage) {
 
         try {
             ImageIO.write(buffImage, "png", new File(System.getProperty("user.dir") + "/src/main/webapp/collage.png"));
@@ -83,6 +87,91 @@ public class Converter {
         BufferedImage image = new BufferedImage(in.cols(), in.rows(), BufferedImage.TYPE_3BYTE_BGR);
         image.getRaster().setDataElements(0, 0, in.cols(), in.rows(), data);
         return image;
+    }
+
+    public BufferedImage getTresholdImage(BufferedImage buffImage) {
+        BufferedImage tresholdedImage = null;
+        buffImage = toBufferedImageOfType(buffImage, BufferedImage.TYPE_3BYTE_BGR);
+        Mat sourceMat = BufferedToMat(buffImage);
+        Mat destinationMat = sourceMat;
+
+        Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_RGB2GRAY);
+
+        Imgproc.adaptiveThreshold(sourceMat, destinationMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 11, 5);
+        //Dokumentation zu adaptiveTreshold -  http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold
+
+        Imgproc.cvtColor(sourceMat, destinationMat, Imgproc.COLOR_GRAY2BGR);
+
+        tresholdedImage = MatToBuffered(destinationMat);
+
+        try {
+            ImageIO.write(tresholdedImage, "jpg", new File(System.getProperty("user.dir") + "/tresholdTestOutput.jpg"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tresholdedImage;
+    }
+
+    public Rect[] detectFaces(Mat rawImage) {
+        MatOfRect faceDetections = new MatOfRect();
+        CascadeClassifier faceDetector = new CascadeClassifier(System.getProperty("user.dir") + "/src/main/resources/lbpcascade_frontalface.xml");
+
+        faceDetector.detectMultiScale(rawImage, faceDetections);
+        Rect[] faces = faceDetections.toArray();
+
+        return faces;
+    }
+
+    public BufferedImage swapBlackToRed(BufferedImage inputImage) {
+        int photoWidth = inputImage.getWidth();
+        int photoHeight = inputImage.getHeight();
+
+        //red 0xFFFF0000
+        for (int x = 0; x < photoWidth; x++) {
+            for (int y = 0; y < photoHeight; y++) {
+                if (inputImage.getRGB(x, y) != -1) { //-1 ist weiss
+                    inputImage.setRGB(x, y, 0xFFFF0000);
+                }
+            }
+        }
+
+        return inputImage;
+    }
+
+    public BufferedImage stitchImages(BufferedImage firstImage, BufferedImage secondImage, Color backgroundColor) throws IOException {
+        BufferedImage resultImage;
+
+        if (firstImage.getHeight() != secondImage.getHeight()) {
+            int newWidth = (int)(((double)firstImage.getHeight()/(double)secondImage.getHeight())*(double)secondImage.getWidth());
+            secondImage = getScaledImage(secondImage, newWidth, firstImage.getHeight());
+        }
+
+        resultImage = new BufferedImage(firstImage.getWidth() +
+                secondImage.getWidth(), firstImage.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics g = resultImage.getGraphics();
+        g.drawImage(firstImage, 0, 0, null);
+        g.drawImage(secondImage, firstImage.getWidth(), 0, null);
+
+        resultImage = setBackgroundColor(resultImage, backgroundColor);
+        return resultImage;
+    }
+
+    public BufferedImage setBackgroundColor(BufferedImage buffImage, Color backgroundColor) {
+
+        BufferedImage backgroundLayer = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(),  BufferedImage.TYPE_INT_ARGB);
+        BufferedImage newBuffImage = new BufferedImage(buffImage.getWidth(), buffImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D graphics = backgroundLayer.createGraphics();
+        graphics.setPaint(backgroundColor);
+        graphics.fillRect(0, 0, backgroundLayer.getWidth(), backgroundLayer.getHeight());
+
+        Graphics g = newBuffImage.getGraphics();
+        g.drawImage(backgroundLayer, 0, 0, null);
+        g.drawImage(buffImage, 0, 0, null);
+
+        return newBuffImage;
     }
 
     /**
