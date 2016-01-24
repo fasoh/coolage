@@ -63,3 +63,7 @@
 #imageArea {
     margin-top: 30px;
 }
+
+#portfolio .portfolio-item .portfolio-link {
+    max-width: 800px;
+}
