@@ -1,19 +1,11 @@
 package de.uniOldenburg.model;
 
-import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
-
-import org.opencv.core.Point;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 public class LetterImageCombination {
 
@@ -24,13 +16,14 @@ public class LetterImageCombination {
     public final float borderSize;
     public final Color borderColor;
     public final int margin;
+    private final Cache cache;
     private Converter converter = new Converter();
     private ResourceLoader loader = new ResourceLoader();
 
     /**
      * Konstruktor für alle Bilder nach dem ersten (die zum vorherigen gestitched werden sollen)
      */
-    public LetterImageCombination(String photoUrl, char letter, Font font, float borderSize, Color borderColor, int margin) {
+    public LetterImageCombination(String photoUrl, char letter, Font font, float borderSize, Color borderColor, int margin, Cache cache) {
 
         this.photo = loader.getImage(photoUrl);
         this.photoUrl = photoUrl;
@@ -39,6 +32,7 @@ public class LetterImageCombination {
         this.borderSize = borderSize;
         this.borderColor = borderColor;
         this.margin = margin;
+        this.cache = cache;
     }
 
     /**
@@ -50,21 +44,12 @@ public class LetterImageCombination {
         int accuracy = 10; //Je höher, desto genauer
         BufferedImage photoGlyph;
 
-        Mat tempMat = converter.BufferedToMat(converter.toBufferedImageOfType(photo, BufferedImage.TYPE_3BYTE_BGR));
-        Rect[] faces = converter.detectFaces(tempMat);
+        LetterResult qualityAreas = cache.getQualityAreas(photoUrl);
 
-        BufferedImage qualityAreas;
-
-        if (faces.length == 0) {
-            qualityAreas = converter.swapBlackToRed(converter.getTresholdImage(photo));
-        } else {
-            qualityAreas = drawFaces(faces, photo.getWidth(), photo.getHeight());
-        }
-
-        BestPositionResult bestPositionResult = getBestCoordinates(qualityAreas, accuracy, letter);
+        BestPositionResult bestPositionResult = getBestCoordinates(qualityAreas.letterImage, accuracy, letter);
         photoGlyph = getPhotoGlyph(photo, letter, bestPositionResult.scale, bestPositionResult.bestX, bestPositionResult.bestY);
         photoGlyph = cropImage(photoGlyph, margin);
-        result = new LetterResult(photoGlyph, letter, faces.length, bestPositionResult.bestQuality * 100);
+        result = new LetterResult(photoGlyph, letter, qualityAreas.numberOfFaces, bestPositionResult.bestQuality * 100);
 
         return result;
     }
@@ -159,26 +144,6 @@ public class LetterImageCombination {
         canvas.dispose();
 
         return finalImage;
-    }
-
-    private BufferedImage drawFaces(Rect[] faces, int canvasWidth, int canvasHeight) {
-        BufferedImage canvas;
-        Mat tempMat = new Mat(canvasHeight, canvasWidth, CvType.CV_8UC3, new Scalar(255, 255, 255));
-
-        for (Rect face : faces) {
-            Point center = new Point(face.x + face.width * 0.5, face.y + face.height * 0.5);
-            Imgproc.ellipse(tempMat, center, new Size(face.width * 0.5, face.height * 0.5), 0, 0, 360, new Scalar(0, 0, 255), -1);
-        }
-
-        canvas = converter.MatToBuffered(tempMat);
-
-        try {
-            ImageIO.write(canvas, "png", new File(System.getProperty("user.dir") + "/faceDetectionTestOutput.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return canvas;
     }
 
     private double getQualityOfPosition(BufferedImage qualityImage, char letter, double imageScale, int offsetX, int offsetY) {

@@ -3,14 +3,10 @@ package de.uniOldenburg.model;
 import org.eclipse.jetty.websocket.api.Session;
 import org.opencv.core.Core;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
-import java.util.concurrent.*;
 
 public class ImageProcessor {
 
@@ -41,7 +37,7 @@ public class ImageProcessor {
 
         text = text.toUpperCase(new Locale("de_DE"));
         ProgressListener progress = new ProgressListener(text, session);
-        LetterImageCombinationCache cache = new LetterImageCombinationCache();
+        Cache cache = new Cache();
 
         for (int glyphCounter = 0; glyphCounter < text.length(); glyphCounter++) {
 

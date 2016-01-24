@@ -16,10 +16,10 @@ public class Letter {
     private final float borderSize;
     private final Color borderColor;
     private final int margin;
-    private final LetterImageCombinationCache cache;
+    private final Cache cache;
 
 
-    public Letter(ArrayList<String> photoOptions, char letter, int index, Font font, float borderSize, Color borderColor, int margin, LetterImageCombinationCache cache) {
+    public Letter(ArrayList<String> photoOptions, char letter, int index, Font font, float borderSize, Color borderColor, int margin, Cache cache) {
 
         this.photoOptions = photoOptions;
         this.letter = letter;
@@ -43,7 +43,7 @@ public class Letter {
         }
 
         for (int photoIndex = 0; photoIndex < photoOptions.size(); photoIndex++) {
-            letterImageCombination = new LetterImageCombination(photoOptions.get(photoIndex), letter, font, borderSize, borderColor, margin);
+            letterImageCombination = new LetterImageCombination(photoOptions.get(photoIndex), letter, font, borderSize, borderColor, margin, cache);
             letterResult = cache.getLetterResult(letterImageCombination);
 
             if (letterResult.quality > bestQuality) {

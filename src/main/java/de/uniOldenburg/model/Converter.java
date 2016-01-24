@@ -1,14 +1,12 @@
 package de.uniOldenburg.model;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Rect;
+import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
@@ -200,5 +198,25 @@ public class Converter {
         g2.drawImage(src, 0, 0, finalw, finalh, null);
         g2.dispose();
         return resizedImg;
+    }
+
+    public BufferedImage drawEllipses(Rect[] ellipses, int canvasWidth, int canvasHeight) {
+        BufferedImage canvas;
+        Mat tempMat = new Mat(canvasHeight, canvasWidth, CvType.CV_8UC3, new Scalar(255, 255, 255));
+
+        for (Rect ellipse : ellipses) {
+            org.opencv.core.Point center = new org.opencv.core.Point(ellipse.x + ellipse.width * 0.5, ellipse.y + ellipse.height * 0.5);
+            Imgproc.ellipse(tempMat, center, new Size(ellipse.width * 0.5, ellipse.height * 0.5), 0, 0, 360, new Scalar(0, 0, 255), -1);
+        }
+
+        canvas = MatToBuffered(tempMat);
+
+        try {
+            ImageIO.write(canvas, "png", new File(System.getProperty("user.dir") + "/faceDetectionTestOutput.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return canvas;
     }
 }
