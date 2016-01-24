@@ -5,7 +5,7 @@
 .dragAndDrop {
     display: block !important;
     padding-top: 205px !important;
-    padding-bottom: 15px !important;
+    padding-bottom: 10px !important;
     margin-left: 0 !important;
     border-radius: 0 !important;
     background-color: #efc849 !important;
@@ -58,4 +58,8 @@
 
 #final-image {
     width: 100%;
+}
+
+.image-options {
+    margin-bottom: 10px;
 }

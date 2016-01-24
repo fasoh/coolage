@@ -20,14 +20,13 @@
 
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="css/fonts.css" rel="stylesheet" type="text/css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <script src="js/html5shiv.js"></script>
+        <script src="js/respond.min.js"></script>
     <![endif]-->
 
 </head>
@@ -76,7 +75,22 @@
             <div class="row">
                 <div class="col-lg-6 col-lg-offset-3">
                     <div class="intro-text">
-                        <input maxlength="13" autocomplete="off" placeholder="Text eingeben" class="coolageText" type="text" name="coolageText" id="coolageText">
+                        <input maxlength="13" autocomplete="off" placeholder="Text eingeben" class="coolageText" type="text" name="coolageText" id="coolageText" style="font-family: 'Raleway', sans-serif;">
+                        <div class="image-options">
+                            <div class="col-sm-6">
+                                <label>
+                                    Schrift wählen:
+                                    <select id="font">
+                                        <option value="raleway">Raleway</option>
+                                        <option value="bitter">Bitter</option>
+                                        <option value="coveredbyyourgrace">Grace</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="col-sm-6">
+                                <label><input type="checkbox" id="useExamples">Beispielbilder verwenden</label>
+                            </div>
+                        </div>
                         <input type="filepicker-dragdrop" data-fp-drag-text="Klicken zum Auswählen oder Bilder hierher ziehen" data-fp-button-class="pickerButton" data-fp-drag-class="dragAndDrop" data-fp-apikey="AWIbpSNFSOGpA9536aaQVz" data-fp-mimetypes="image/*" data-fp-container="modal" data-fp-multiple="true" data-fp-services="COMPUTER,DROPBOX,FACEBOOK,GOOGLE_DRIVE,INSTAGRAM,URL" onchange="startCoolage(event.fpfiles)">
                         <button class="btn btn-lg btn-outline" id="generateCoolage" disabled>Coolage generieren</button>
                     </div>
@@ -481,7 +495,7 @@
     <script src="js/bootstrap.min.js"></script>
 
     <!-- Plugin JavaScript -->
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="js/jquery.easing.min.js"></script>
     <script src="js/cbpAnimatedHeader.js"></script>
 
     <!-- Custom Theme JavaScript -->
@@ -491,7 +505,7 @@
     <script src="js/coolage.js"></script>
 
     <!-- FilePicker -->
-    <script type="text/javascript" src="//api.filepicker.io/v2/filepicker.js"></script>
+    <script type="text/javascript" src="js/filepicker.js"></script>
 </body>
 
 </html>

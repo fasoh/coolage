@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -31,8 +32,17 @@ public class CoolageSocketListener {
             for (String image : imagesArray) {
                 urlList.add("https://process.filestackapi.com/AhTgLagciQByzXpFGRI0Az/resize=width:620,height:414,fit:max/" + image);
             }
-            String fontUrl = "https://fonts.gstatic.com/s/raleway/v9/PKCRbVvRfd5n7BTjtGiFZMDdSZkkecOE1hvV7ZHvhyU.ttf";
-            //TODO Für leerzeichen muss das bild nicht geladen werden (im converter) (bsp "a b c" lädt 5 bilder runter, nicht 3)
+
+            String fontUrl = "file://" + System.getProperty("user.dir") + "/src/main/webapp/fonts/";
+
+            if (jsonMessage.getString("font").equals("bitter")) {
+                fontUrl += "Bitter-Bold.ttf";
+            } else if (jsonMessage.getString("font").equals("coveredbyyourgrace")) {
+                fontUrl += "CoveredByYourGrace.ttf";
+            } else {
+                fontUrl += "Raleway-Heavy.ttf";
+            }
+
             ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15, session);
             imageProcessor.processImages(resourceLoader.getFittedImagesSources(text, urlList), text);
 

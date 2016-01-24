@@ -22,6 +22,16 @@ $(function() {
 
 	$('#generateCoolage').prop('disabled', false);
 
+	$('#font').change(function() {
+		if ($('#font').val() == "coveredbyyourgrace") {
+			$('#coolageText').css('font-family', "Covered By Your Grace");
+		} else if ($('#font').val() == "bitter") {
+			$('#coolageText').css('font-family', "Bitter");
+		} else {
+			$('#coolageText').css('font-family', "Raleway");
+		}
+	});
+
 	$('#generateCoolage').click(function() {
 
 		var imagesString = '';
@@ -47,7 +57,9 @@ $(function() {
 
 			serverSocket.send(JSON.stringify({
 				images: imagesString,
-				text: $('#coolageText').val()
+				text: $('#coolageText').val(),
+				font: $('#font').val(),
+				useExamples: $('#use-examples').is(':checked')
 			}));
 		};
 
