@@ -105,7 +105,7 @@ public class Converter {
         tresholdedImage = MatToBuffered(destinationMat);
 
         try {
-            ImageIO.write(tresholdedImage, "jpg", new File(System.getProperty("user.dir") + "/tresholdTestOutput.jpg"));
+            ImageIO.write(tresholdedImage, "png", new File(System.getProperty("user.dir") + "/tresholdTestOutput.png"));
 
         } catch (Exception e) {
             e.printStackTrace();
