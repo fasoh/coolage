@@ -1,26 +1,26 @@
 
 var startCoolage;
+var updateSendButton;
 var images = [];
 
 $(function() {
-	startCoolage = function(files) {
-		images = files;
-		if (images.length > 0 && $('#coolageText').val() != "") {
+
+	updateSendButton = function() {
+		if (($('#useExamples').is(':checked') || images.length > 0) && $('#coolageText').val() != "") {
 			$('#generateCoolage').prop('disabled', false);
 		} else {
 			$('#generateCoolage').prop('disabled', true);
 		}
 	};
 
-	$('#coolageText').keyup( function() {
-		if (images.length > 0 && $('#coolageText').val() != "") {
-			$('#generateCoolage').prop('disabled', false);
-		} else {
-			$('#generateCoolage').prop('disabled', true);
-		}
-	});
+	startCoolage = function(files) {
+		images = files;
+		updateSendButton();
+	};
 
-	$('#generateCoolage').prop('disabled', false);
+	$('#coolageText').keyup( function() {
+		updateSendButton();
+	});
 
 	$('#font').change(function() {
 		if ($('#font').val() == "coveredbyyourgrace") {
@@ -30,6 +30,15 @@ $(function() {
 		} else {
 			$('#coolageText').css('font-family', "Raleway");
 		}
+	});
+
+	$('#useExamples').change(function() {
+		if ($('#useExamples').is(':checked')) {
+			$('#imageArea').slideUp();
+		} else {
+			$('#imageArea').slideDown();
+		}
+		updateSendButton();
 	});
 
 	$('#generateCoolage').click(function() {
@@ -59,7 +68,7 @@ $(function() {
 				images: imagesString,
 				text: $('#coolageText').val(),
 				font: $('#font').val(),
-				useExamples: $('#use-examples').is(':checked')
+				useExamples: $('#useExamples').is(':checked')
 			}));
 		};
 

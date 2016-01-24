@@ -14,39 +14,40 @@ import java.util.concurrent.ExecutionException;
 
 @WebSocket
 public class CoolageSocketListener {
+
+    ResourceLoader resourceLoader = new ResourceLoader();
+
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
 
         JSONObject jsonMessage = new JSONObject(message);
 
-        if (jsonMessage.has("text") && jsonMessage.has("images") &&
-                !jsonMessage.getString("text").isEmpty() &&
-                !jsonMessage.getString("images").isEmpty()) {
+        String text = jsonMessage.get("text").toString();
+        String allImages = jsonMessage.get("images").toString();
 
-            String text = jsonMessage.get("text").toString();
-            String allImages = jsonMessage.get("images").toString();
+        ArrayList<String> urlList = new ArrayList<String>();
 
-            ResourceLoader resourceLoader = new ResourceLoader();
-            ArrayList<String> urlList = new ArrayList<String>();
+        if (jsonMessage.getBoolean("useExamples")) {
+            urlList = resourceLoader.getExampleImages();
+        } else {
             String[] imagesArray = allImages.split(";");
             for (String image : imagesArray) {
                 urlList.add("https://process.filestackapi.com/AhTgLagciQByzXpFGRI0Az/resize=width:620,height:414,fit:max/" + image);
             }
-
-            String fontUrl = "file://" + System.getProperty("user.dir") + "/src/main/webapp/fonts/";
-
-            if (jsonMessage.getString("font").equals("bitter")) {
-                fontUrl += "Bitter-Bold.ttf";
-            } else if (jsonMessage.getString("font").equals("coveredbyyourgrace")) {
-                fontUrl += "CoveredByYourGrace.ttf";
-            } else {
-                fontUrl += "Raleway-Heavy.ttf";
-            }
-
-            ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15, session);
-            imageProcessor.processImages(resourceLoader.getFittedImagesSources(text, urlList), text);
-
-            System.out.println("Done!");
         }
+
+        String fontUrl = "file://" + System.getProperty("user.dir") + "/src/main/webapp/fonts/";
+        if (jsonMessage.getString("font").equals("bitter")) {
+            fontUrl += "Bitter-Bold.ttf";
+        } else if (jsonMessage.getString("font").equals("coveredbyyourgrace")) {
+            fontUrl += "CoveredByYourGrace.ttf";
+        } else {
+            fontUrl += "Raleway-Heavy.ttf";
+        }
+
+        ImageProcessor imageProcessor = new ImageProcessor(fontUrl, 400f, Color.WHITE, 2f, Color.BLACK, 15, session);
+        imageProcessor.processImages(resourceLoader.getFittedImagesSources(text, urlList), text);
+
+        System.out.println("Done!");
     }
 }

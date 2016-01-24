@@ -5,7 +5,7 @@
 .dragAndDrop {
     display: block !important;
     padding-top: 205px !important;
-    padding-bottom: 10px !important;
+    padding-bottom: 15px !important;
     margin-left: 0 !important;
     border-radius: 0 !important;
     background-color: #efc849 !important;
@@ -30,7 +30,7 @@
     border: none;
     text-align: center;
     text-transform: uppercase;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-size: 33px;
     font-family: Montserrat, 'Helvetica Neue', Helvetica, Arial, sans-serif;
     width: 100%;
@@ -60,6 +60,6 @@
     width: 100%;
 }
 
-.image-options {
-    margin-bottom: 10px;
+#imageArea {
+    margin-top: 30px;
 }

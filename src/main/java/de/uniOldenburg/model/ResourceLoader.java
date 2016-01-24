@@ -25,12 +25,12 @@ public class ResourceLoader {
                 urlList.add(urlList.get(j));
                 j++;
             }
-        } else { //Trims rawImageList to size of text if there are more images than text
+        } /* else { //Trims rawImageList to size of text if there are more images than text
             System.out.println("Trimming imageList (text < imageList.size())");
             for (int i = urlList.size(); i > text.length(); i--){
                 urlList.remove(urlList.size() - 1);
             }
-        }
+        } */
         return urlList;
     }
 
@@ -155,5 +155,20 @@ public class ResourceLoader {
         }
 
         return font;
+    }
+
+    public ArrayList<String> getExampleImages() {
+
+        ArrayList<String> exampleImages = new ArrayList<String>();
+
+        File folder = new File(System.getProperty("user.dir") + "/src/main/example images/");
+        File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                exampleImages.add("file://" + System.getProperty("user.dir") + "/src/main/example images/" + listOfFiles[i].getName());
+            }
+        }
+        return exampleImages;
     }
 }
