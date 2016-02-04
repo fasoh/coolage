@@ -4,9 +4,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-/**
- * Created by adrian-jagusch on 22.01.16.
- */
 public class Letter {
 
     private final ArrayList<String> photoOptions;
@@ -49,6 +46,7 @@ public class Letter {
             if (letterResult.quality > bestQuality) {
                 bestCombination = letterResult;
                 bestCombination.bestIndex = photoIndex;
+                bestQuality = letterResult.quality;
             }
         }
         return bestCombination;
