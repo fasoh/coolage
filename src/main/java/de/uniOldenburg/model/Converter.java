@@ -22,7 +22,7 @@ public class Converter {
             e.printStackTrace();
         }
 
-        return "/collage.png";
+        return "/collage.png?t=" + System.currentTimeMillis();
     }
 
     public BufferedImage toBufferedImageOfType(BufferedImage original, int type) {
